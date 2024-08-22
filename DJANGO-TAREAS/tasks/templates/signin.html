@@ -1,0 +1,15 @@
+{% extends 'base.html' %} <!--Para usar el template llamado base.html-->
+
+
+{% block content%}
+<h2>Log in</h2>
+<p>Inicia sesion colega</p>
+<p style="color: red;">{{error}}</p>
+
+<form action="/signin/" method="post">
+    {% csrf_token %}
+    {{form.as_p}}
+    <button>Sign In</button>
+</form>
+
+{% endblock %}
