@@ -46,16 +46,41 @@ def tasks(request):
     tasks = Task.objects.filter(user= request.user, date_completed__isnull = True) #Las tareas que se muestran serán las del usuario que ha iniciado sesión y que no se hayan completado
     return render(request, 'tasks.html', {
         'title': "Tareas Pendientes",
-        'tasks': tasks
+        'tasks': tasks,
+        'url_name': "tasks"
     })
+
+# @login_required
+# def tasks_completed(request):
+#     tasks = Task.objects.filter(user= request.user, date_completed__isnull = False).order_by('-date_completed') #Las tareas que se muestran serán las del usuario que ha iniciado sesión y que no se hayan completado
+#     return render(request, 'tasks.html', {
+#         'title': "Tareas Completadas",
+#         'tasks': tasks
+#     })
 
 @login_required
 def tasks_completed(request):
-    tasks = Task.objects.filter(user= request.user, date_completed__isnull = False).order_by('-date_completed') #Las tareas que se muestran serán las del usuario que ha iniciado sesión y que no se hayan completado
+    sort_mode = request.GET.get('sort_mode')  # Obtener el parámetro sort_mode de la URL
+    
+    if sort_mode == '1':
+        # Ordenar por el campo date_completed, el más antiguo primero
+        tasks = Task.objects.filter(user=request.user, date_completed__isnull=False).order_by('date_completed')
+    elif sort_mode == '2':
+        # Ordenar por el campo important (mostrar primero los True)
+        tasks = Task.objects.filter(user=request.user, date_completed__isnull=False).order_by('-important', '-date_completed')
+    elif sort_mode == '3':
+        # Ordenar por el campo title, en orden alfabético
+        tasks = Task.objects.filter(user=request.user, date_completed__isnull=False).order_by('title')
+    else:
+        # Ordenar por el campo date_completed (por defecto), más reciente primero
+        tasks = Task.objects.filter(user=request.user, date_completed__isnull=False).order_by('-date_completed')
+
     return render(request, 'tasks.html', {
         'title': "Tareas Completadas",
-        'tasks': tasks
+        'tasks': tasks, 
+        'url_name': "tasks_completed"
     })
+
 
 @login_required
 def signout(request):
