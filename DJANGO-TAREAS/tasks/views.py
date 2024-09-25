@@ -14,39 +14,30 @@ from django.contrib.auth.decorators import login_required
 def home(request): 
     return render(request, 'home.html')
 
-def signup(request):
- 
-    if request.method == 'GET': 
-        print('enviando formulario')
-        return render(request, 'signup.html', {
-            'form': UserCreationForm,
-    })
-    
-    else: 
-        if request.POST['password1'] ==  request.POST['password2']: #se cotejan las contraseñas
-           try: 
-                # Registro de usuario
-                user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'])
-                user.save()
-                login(request, user) #arranca la cookie de sesión 
-                #return HttpResponse('Usuario creado con éxito')
-                return redirect('tasks')
-           except IntegrityError: 
-                return render(request, 'signup.html', {
-                    'form': UserCreationForm,
-                    "error": 'El usuario ya existe'
-                })
-        return render(request, 'signup.html', {
-                    'form': UserCreationForm,
-                    "error": 'Las contraseñas no coinciden'
-                })
-       
+
 @login_required
 def tasks(request):
-    tasks = Task.objects.filter(user= request.user, date_completed__isnull = True) #Las tareas que se muestran serán las del usuario que ha iniciado sesión y que no se hayan completado
+    #tasks = Task.objects.filter(user= request.user, date_completed__isnull = True) #Las tareas que se muestran serán las del usuario que ha iniciado sesión y que no se hayan completado
+
+    sort_mode = request.GET.get('sort_mode')  # Obtener el parámetro sort_mode de la URL
+    
+    if sort_mode == '1':
+        # Ordenar por el campo date_completed, el más antiguo primero
+        tasks = Task.objects.filter(user=request.user, date_completed__isnull=True).order_by('date_completed')
+    elif sort_mode == '2':
+        # Ordenar por el campo important (mostrar primero los True)
+        tasks = Task.objects.filter(user=request.user, date_completed__isnull=True).order_by('-important', '-created_at')
+    elif sort_mode == '3':
+        # Ordenar por el campo title, en orden alfabético
+        tasks = Task.objects.filter(user=request.user, date_completed__isnull=True).order_by('title')
+    else:
+        # Ordenar por el campo date_completed (por defecto), más reciente primero
+        tasks = Task.objects.filter(user=request.user, date_completed__isnull=True).order_by('-date_completed')
+
     return render(request, 'tasks.html', {
         'title': "Tareas Pendientes",
         'tasks': tasks,
+        'date_field': "Fecha de Creación",
         'url_name': "tasks"
     })
 
@@ -61,7 +52,6 @@ def tasks(request):
 @login_required
 def tasks_completed(request):
     sort_mode = request.GET.get('sort_mode')  # Obtener el parámetro sort_mode de la URL
-    
     if sort_mode == '1':
         # Ordenar por el campo date_completed, el más antiguo primero
         tasks = Task.objects.filter(user=request.user, date_completed__isnull=False).order_by('date_completed')
@@ -78,30 +68,31 @@ def tasks_completed(request):
     return render(request, 'tasks.html', {
         'title': "Tareas Completadas",
         'tasks': tasks, 
+        'date_field': "Completada el",
         'url_name': "tasks_completed"
     })
 
 
-@login_required
-def signout(request):
-    logout(request)
-    return redirect('home')
+#@login_required
+# def signout(request):
+#     logout(request)
+#     return redirect('home')
 
-def signin(request):
-    if request.method == "GET": 
-      return render(request, 'signin.html',{
-        'form': AuthenticationForm
-    })
-    else:
-        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
-        if user is None: #Si el usuario está vacío (incorrecto o inexistente) se muestra de nuevo el login con un error
-             return render(request, 'signin.html',{
-            'form': AuthenticationForm,
-            'error': 'Las credenciales son incorrectas'
-        })
-        else: #Si las credenciales son correctas se arranca la sesión y se redirecciona a la vista tasks
-            login(request, user)
-            return redirect('tasks')
+# def signin(request):
+#     if request.method == "GET": 
+#       return render(request, 'signin.html',{
+#         'form': AuthenticationForm
+#     })
+#     else:
+#         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+#         if user is None: #Si el usuario está vacío (incorrecto o inexistente) se muestra de nuevo el login con un error
+#              return render(request, 'signin.html',{
+#             'form': AuthenticationForm,
+#             'error': 'Las credenciales son incorrectas'
+#         })
+#         else: #Si las credenciales son correctas se arranca la sesión y se redirecciona a la vista tasks
+#             login(request, user)
+#             return redirect('tasks')
         
 @login_required
 def create_task(request):

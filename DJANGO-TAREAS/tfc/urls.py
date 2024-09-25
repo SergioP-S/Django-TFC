@@ -17,15 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from tasks import views
+from auth_app import views as auth_appViews
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.home, name='home'),
-    path('signup/',  views.signup, name='signup'),
-    path('signin/',  views.signin, name='signin'),
+    path('signup/',  auth_appViews.signup, name='signup'),
+    path('signin/',  auth_appViews.signin, name='signin'),
     path('tasks/', views.tasks, name='tasks'),
     path('tasks_completed/', views.tasks_completed, name='tasks_completed'),
-    path('logout/', views.signout, name='logout'),
+    path('logout/', auth_appViews.signout, name='logout'),
     path('tasks/create/', views.create_task, name='create'),
     path('tasks/<int:task_id>/', views.task_detail, name='task_detail'),
     path('tasks/<int:task_id>/complete', views.complete_task, name='complete_task'),

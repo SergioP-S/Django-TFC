@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tasks'
+    'tasks',
+    'auth_app',
+    'lists'
 ]
 
 MIDDLEWARE = [
@@ -100,6 +102,14 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# #Auth Model
+# AUTH_USER_MODEL = 'auth_app.CustomUser'
+
+# Custom Backend for auth process
+AUTHENTICATION_BACKENDS = [
+    'auth_app.auth.custom_backend.CustomBackend',
+    'django.contrib.auth.backends.ModelBackend',  # Default if necessary
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
@@ -124,3 +134,4 @@ LOGIN_URL = '/signin'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

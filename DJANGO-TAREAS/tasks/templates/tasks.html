@@ -28,7 +28,7 @@
 
               <div class="dropdown mb-3">
                 <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                 Filtrar por
+                 Ordenar por
                 </button>
                 <ul class="dropdown-menu">
                   <li><a class="dropdown-item" href="{% url url_name %}">Más Reciente Primero</a></li>
@@ -43,7 +43,7 @@
                   <tr>
                     <th scope="col">Tarea</th>
                     <th scope="col">Importancia</th>
-                    <th scope="col">Fecha añadida</th>
+                    <th scope="col">{{date_field}}</th>
                     <th scope="col">Acciones</th>
                   </tr>
                 </thead>
