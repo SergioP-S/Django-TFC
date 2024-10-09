@@ -1,0 +1,67 @@
+{% extends 'base_lists.html' %}
+
+{% block content %}
+<div class="container"></div>
+    <div class="row">
+        
+        <div class="col-md-6 border border-danger bg-light">
+            <h2>{{ title }}</h2>
+            <p>{{ list.name }}</p>
+            <p>Creada en: {{ list.created_on }} por {{list.creator}}</p>
+            <a class="btn btn-warning" href="{% url 'add_item' list.id %}">Add Item</a>
+            
+            <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Item Name</th>
+                    <th scope="col">Added by</th>
+                    <th scope="col">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <th scope="row">{{item.name}}</th>
+                            <td>{{item.added_by}}</td>
+                            <td>
+                                {% if item.added_by == request.user %}
+                                    <a class="btn btn-warning" href="">Editar</a>
+                                {% endif %}
+                                {% if item.added_by == request.user or list.creator == request.user %}
+                                <form action="{% url 'delete_item' list_id=item.list.id item_id=item.id %}" method="post" onsubmit="confirm('¿Está seguro que quiere eliminar la tarea?')">
+                                    {% csrf_token %}
+                                    <button class="btn btn-danger">
+                                        Borrar
+                                    </button>
+                                </form>
+                                {% endif %}
+
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+              </table>
+
+        </div>
+
+        
+        <div class="col-md-6 border border-danger bg-light">
+            <h2>Administrar lista</h2>
+            {% if request.user == list.creator %}
+                <p><button>Cambiar nombre/desripción</button></p>
+                <p><button class="text-danger">Vaciar Lista</button></p>
+            {% else %}
+                <p class="text-danger">No tienes permisos para realizar esta acción</p>
+            {% endif %}
+            <h4>Creador</h4>
+            {{list.creator}}
+            <h4>colaboradores</h4>
+            <ul>
+                    {% for collaborator in list.collaborators.all %}
+                    <li>{{collaborator.username}}</li>
+                    {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

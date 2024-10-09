@@ -1,7 +1,22 @@
-{% extends 'base.html' %} <!--Para usar el template llamado base.html-->
-
-
-{% block content%}
-<h2>Home</h2>
-<p>La app esta en github ya</p>
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="container-fluid h-100">
+        <div class="row h-100 align-items-center justify-content-center">
+            <div class="col-md-6">
+                <div class="card mt-5">
+                    <div class="card-body">
+                        <h1 class="card-title text-center">Welcome to Your Task & Shopping List Manager!</h1>
+                        <p class="card-text text-center">Organize your life with our easy-to-use app. Create and manage tasks and shopping lists effortlessly.</p>
+                        <div class="text-center mt-4">
+                            <a href="{% url 'tasks' %}" class="btn btn-primary btn-lg"><i class="fas fa-tasks"></i> Manage Tasks</a>
+                            <a href="{% url 'lists' %}" class="btn btn-primary btn-lg ml-3"><i class="fas fa-shopping-cart"></i> Manage Shopping Lists</a>
+                        </div>
+                    
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  
 {% endblock %}
