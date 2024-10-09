@@ -3,12 +3,15 @@ from django.contrib.auth.decorators import login_required
 from .models import List, Item
 from django.db.models import Q
 from .forms import *
+import json
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 @login_required
 def lists(request):
-    lists = List.objects.filter(Q(creator=request.user) | Q(collaborators=request.user)).order_by('created_on')
-
+    lists = List.objects.filter(Q(creator=request.user) | Q(collaborators=request.user)).order_by('created_on').distinct()
+    print(lists)
     return render(request, 'lists.html',{
         'title': 'Lists',
         'lists': lists
@@ -78,3 +81,23 @@ def delete_item(request, item_id, list_id):
         item.delete()
         return redirect('list_details', list_id=list_id)
     
+@csrf_exempt
+def update_items(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)  # Obtener los datos de la solicitud AJAX
+
+            # Iterar sobre los cambios y actualizar cada ítem
+            for item_id, is_done in data.items():
+                try:
+                    item = Item.objects.get(id=item_id)  # Buscar el ítem por su ID
+                    item.is_done = is_done  # Actualizar el estado
+                    item.save()  # Guardar los cambios
+                except Item.DoesNotExist:
+                    return JsonResponse({'success': False, 'error': f'Item con id {item_id} no encontrado'})
+
+            return JsonResponse({'success': True})
+        except json.JSONDecodeError:
+            return JsonResponse({'success': False, 'error': 'Datos inválidos'})
+    else:
+        return JsonResponse({'success': False, 'error': 'Método no permitido'})

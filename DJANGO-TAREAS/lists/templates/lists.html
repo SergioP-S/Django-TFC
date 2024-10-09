@@ -1,14 +1,14 @@
 {% extends 'base_lists.html' %}
 
-{% block content%}
+{% block content %}
 <h1>{{title}}</h1>
 <p>Verde = Creador, Amarilla = Colaborador</p>
     {% for list in lists %}
 
-    {% if request.user == list.creator%}
-        <div class="container border border-success p-2 m-3">
+    {% if request.user == list.creator %}
+    <div class="container border border-success p-2 m-3">
     {% else %}
-        <div class="container border border-warning p-2 m-3">
+    <div class="container border border-warning p-2 m-3">
     {% endif %}
         <h3>
             {{list.name}}

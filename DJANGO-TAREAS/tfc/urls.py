@@ -36,7 +36,8 @@ urlpatterns = [
     path('lists/create/', listsViews.create_list, name='create_list'),
     path('lists/<int:list_id>/', listsViews.list_details, name='list_details'),
     path('lists/<int:list_id>/add_item/', listsViews.add_item, name='add_item'),
-    path('lists/<int:list_id>/delete_item/<int:item_id>', listsViews.delete_item, name='delete_item')
+    path('lists/<int:list_id>/delete_item/<int:item_id>', listsViews.delete_item, name='delete_item'),
+    path('update_items/', listsViews.update_items, name='update_multiple'),
     
 
 ]

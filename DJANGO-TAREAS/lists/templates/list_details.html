@@ -12,35 +12,42 @@
             
             <table class="table">
                 <thead>
-                  <tr>
-                    <th scope="col">Item Name</th>
-                    <th scope="col">Added by</th>
-                    <th scope="col">Acciones</th>
-                  </tr>
+                    <tr>
+                        <th scope="col">Item Name</th>
+                        <th scope="col">Added by</th>
+                        <th scope="col">¿Completado?</th>  <!-- Nueva columna para el checkbox -->
+                        <th scope="col">Acciones</th>
+                    </tr>
                 </thead>
                 <tbody>
-                    {% for item in items %}
-                        <tr>
-                            <th scope="row">{{item.name}}</th>
-                            <td>{{item.added_by}}</td>
-                            <td>
-                                {% if item.added_by == request.user %}
-                                    <a class="btn btn-warning" href="">Editar</a>
-                                {% endif %}
-                                {% if item.added_by == request.user or list.creator == request.user %}
-                                <form action="{% url 'delete_item' list_id=item.list.id item_id=item.id %}" method="post" onsubmit="confirm('¿Está seguro que quiere eliminar la tarea?')">
-                                    {% csrf_token %}
-                                    <button class="btn btn-danger">
-                                        Borrar
-                                    </button>
-                                </form>
-                                {% endif %}
-
-                            </td>
-                        </tr>
-                    {% endfor %}
+                    <form id="update-form">  <!-- Formulario para enviar todos los cambios -->
+                        {% for item in items %}
+                            <tr>
+                                <th scope="row">{{ item.name }}</th>
+                                <td>{{ item.added_by }}</td>
+                                <td>
+                                    <!-- Checkbox para marcar si está completado -->
+                                    <input type="checkbox" class="is-done-checkbox" data-item-id="{{ item.id }}" {% if item.is_done %}checked{% endif %}>
+                                </td>
+                                <td>
+                                    {% if item.added_by == request.user %}
+                                        <a class="btn btn-warning" href="">Editar</a>
+                                    {% endif %}
+                                    {% if item.added_by == request.user or list.creator == request.user %}
+                                    <form action="{% url 'delete_item' list_id=item.list.id item_id=item.id %}" method="post" onsubmit="confirm('¿Está seguro que quiere eliminar la tarea?')">
+                                        {% csrf_token %}
+                                        <button class="btn btn-danger">Borrar</button>
+                                    </form>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        <!-- Botón para guardar todos los cambios -->
+                        <button type="button" id="save-changes" class="btn btn-primary">Guardar cambios</button>
+                    </form>
                 </tbody>
-              </table>
+            </table>
+            
 
         </div>
 
@@ -64,4 +71,52 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkboxes = document.querySelectorAll('.is-done-checkbox');
+        const changes = {};
+
+        // Detectar cambios en los checkboxes
+        checkboxes.forEach(function (checkbox) {
+            checkbox.addEventListener('change', function () {
+                const itemId = this.dataset.itemId;
+                const isDone = this.checked;
+                
+                // Registrar el cambio en el objeto "changes"
+                changes[itemId] = isDone;
+            });
+        });
+
+        // Al hacer clic en "Guardar cambios"
+        document.getElementById('save-changes').addEventListener('click', function () {
+            if (Object.keys(changes).length === 0) {
+                alert("No hay cambios para guardar.");
+                return;
+            }
+
+            // Enviar los cambios al servidor usando fetch
+            fetch('/update_items/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',  // Token CSRF para proteger la solicitud
+                },
+                body: JSON.stringify(changes)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Cambios guardados correctamente.");
+                    console.log("Cambios guardados:", data);
+                } else {
+                    alert("Error guardando los cambios.");
+                    console.error(data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+</script>
+
 {% endblock %}
