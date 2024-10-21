@@ -1,0 +1,7 @@
+Falta añadir las funcionalidades de:
+    Vaciar listas --> HECHO, Error por solucionar cuando se hace petición GET a empty_list
+    Editar item
+    Editar lista (nombre, descripcion...)
+    Compartir enlace para entrar a las listas
+    Mejorar navegación
+    

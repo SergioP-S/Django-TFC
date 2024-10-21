@@ -51,6 +51,14 @@ def tasks(request):
 
 @login_required
 def tasks_completed(request):
+
+    """
+    UNCOMPLETED
+  
+    :param request: to be done
+    :return: to be done
+    """
+
     sort_mode = request.GET.get('sort_mode')  # Obtener el parámetro sort_mode de la URL
     if sort_mode == '1':
         # Ordenar por el campo date_completed, el más antiguo primero

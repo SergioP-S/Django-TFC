@@ -56,7 +56,10 @@
             <h2>Administrar lista</h2>
             {% if request.user == list.creator %}
                 <p><button>Cambiar nombre/desripción</button></p>
-                <p><button class="text-danger">Vaciar Lista</button></p>
+                <form method="POST" action="{% url 'empty_list' list_id=list.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Vaciar Lista</button>
+                </form>
             {% else %}
                 <p class="text-danger">No tienes permisos para realizar esta acción</p>
             {% endif %}
