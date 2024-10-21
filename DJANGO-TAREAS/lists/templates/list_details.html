@@ -31,7 +31,7 @@
                                 </td>
                                 <td>
                                     {% if item.added_by == request.user %}
-                                        <a class="btn btn-warning" href="">Editar</a>
+                                        <a class="btn btn-warning" href="{% url 'modify_item' list_id=list.id item_id=item.id%}">Editar</a>
                                     {% endif %}
                                     {% if item.added_by == request.user or list.creator == request.user %}
                                     <form action="{% url 'delete_item' list_id=item.list.id item_id=item.id %}" method="post" onsubmit="confirm('¿Está seguro que quiere eliminar la tarea?')">
@@ -55,7 +55,7 @@
         <div class="col-md-6 border border-danger bg-light">
             <h2>Administrar lista</h2>
             {% if request.user == list.creator %}
-                <p><button>Cambiar nombre/desripción</button></p>
+                <a class="btn btn-warning" href="{% url 'modify_list' list_id=list.id %}">Modificar Detalles de la lista</a>
                 <form method="POST" action="{% url 'empty_list' list_id=list.id %}">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-danger">Vaciar Lista</button>

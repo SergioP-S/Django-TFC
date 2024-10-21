@@ -1,10 +1,11 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse
 from .models import List, Item
 from django.db.models import Q
 from .forms import *
 import json
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 @login_required
@@ -103,7 +104,7 @@ def add_item(request, list_id):
             return render(request, 'add_item.html', {
             'form': ListForm,
             'error': 'Error, introduzca datos válidos'
-        })
+            })
 
 @login_required
 def delete_item(request, item_id, list_id):
@@ -161,7 +162,7 @@ def empty_list(request, list_id):
     """
     if request.method == 'GET':
         #change to 404 not Found
-        return redirect('list_details', list_id=list_id)
+        raise Http404
     else:
         try:
             items = Item.objects.filter(list=list_id)
@@ -175,3 +176,87 @@ def empty_list(request, list_id):
                 'title': 'Lists',
                 'error': "error"
             })
+
+@login_required
+def modify_list(request, list_id):
+    """
+    Allows user to modify the list info.  
+
+    :param request: gets info about the request, such as method used (get or post) or user info.
+    :param list_id:
+    """
+    list = get_object_or_404(List, pk=list_id)
+    if request.user == list.creator or request.user in list.collaborators.all():
+        if request.method == 'GET': 
+            form = ModifyListForm(instance=list)
+            return render(request, 'modify_list.html', {
+                'form': form,
+                'list': list
+            })
+        else:
+            try:
+                #list = get_object_or_404(List, pk=list_id) 
+                print(list)
+                form = ModifyListForm(request.POST, instance=list)
+                form.save()
+                return redirect(f'/lists/{list_id}/')
+            except:
+                return render(request, 'modify_list.html', {
+                'form': ModifyListForm,
+                'error': "Error al modificar la lista"
+            })
+    else:
+        #FALTA RETORNAR UN 404
+        raise Http404
+
+
+def user_in_list(list_id, User):
+    """
+    Checks if an user is collaborator or the creator of the list, returns true or false 
+
+    :param list_id: pk of the list that is going to be checked
+    :param User: user info where it gets the username
+    :return: True if the user is collaborator or creator of the list, False if its not collaborator or the creator.
+    """
+    try:
+        list = List.objects.get(id=list_id)  
+        if list.creator == User.username:
+            print("Es el creador de la lista")
+            return True
+        elif list.collaborators == User.username:
+            print("Es colaborador de la lista")
+            return True
+        else:
+            print("No es ni colaborador ni creador de la lista")
+            return False
+    except List.DoesNotExist:
+        return Exception
+    
+@login_required
+def modify_item(request, list_id, item_id):
+
+    item = get_object_or_404(Item, pk=item_id)
+    list = get_object_or_404(List, pk=list_id)
+
+    if request.user == list.creator or request.user in list.collaborators.all() or request.user == item.added_by:
+        if request.method == 'GET': 
+            form = ModifyItemForm(instance=item)
+            return render(request, 'modify_item.html', {
+                'form': form,
+                'list': list, 
+                'item': item
+            })
+        else:
+            try:
+                #item = get_object_or_404(Item, pk=item_id) 
+                print(item)
+                form = ModifyItemForm(request.POST, instance=item)
+                form.save()
+                return redirect(f'/lists/{list_id}/')
+            except:
+                return render(request, 'modify_list.html', {
+                'form': ModifyItemForm,
+                'error': "Error al modificar la lista"
+            })
+    else:
+        raise Http404

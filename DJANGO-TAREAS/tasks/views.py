@@ -79,28 +79,6 @@ def tasks_completed(request):
         'date_field': "Completada el",
         'url_name': "tasks_completed"
     })
-
-
-#@login_required
-# def signout(request):
-#     logout(request)
-#     return redirect('home')
-
-# def signin(request):
-#     if request.method == "GET": 
-#       return render(request, 'signin.html',{
-#         'form': AuthenticationForm
-#     })
-#     else:
-#         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
-#         if user is None: #Si el usuario está vacío (incorrecto o inexistente) se muestra de nuevo el login con un error
-#              return render(request, 'signin.html',{
-#             'form': AuthenticationForm,
-#             'error': 'Las credenciales son incorrectas'
-#         })
-#         else: #Si las credenciales son correctas se arranca la sesión y se redirecciona a la vista tasks
-#             login(request, user)
-#             return redirect('tasks')
         
 @login_required
 def create_task(request):
