@@ -1,3 +1,4 @@
+from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -195,18 +196,20 @@ def modify_list(request, list_id):
             })
         else:
             try:
-                #list = get_object_or_404(List, pk=list_id) 
-                print(list)
                 form = ModifyListForm(request.POST, instance=list)
-                form.save()
-                return redirect(f'/lists/{list_id}/')
-            except:
+                if form.is_valid():
+                    modified_list = form.save(commit=False)  # No se guarda aún en la base de datos
+                    modified_list.last_modified = timezone.now() # Actualiza last_modified
+                    modified_list.modified_by = request.user  # Establece modified_by
+                    modified_list.save()  # Guarda finalmente en la base de datos
+                    return redirect(f'/lists/{list_id}/')
+            except Exception as e:
                 return render(request, 'modify_list.html', {
                 'form': ModifyListForm,
+                'list': list,
                 'error': "Error al modificar la lista"
-            })
+                })
     else:
-        #FALTA RETORNAR UN 404
         raise Http404
 
 
@@ -229,8 +232,8 @@ def user_in_list(list_id, User):
         else:
             print("No es ni colaborador ni creador de la lista")
             return False
-    except List.DoesNotExist:
-        return Exception
+    except List.DoesNotExist as e:
+        return e
     
 @login_required
 def modify_item(request, list_id, item_id):
@@ -247,16 +250,35 @@ def modify_item(request, list_id, item_id):
                 'item': item
             })
         else:
-            try:
-                #item = get_object_or_404(Item, pk=item_id) 
-                print(item)
+            try:            
                 form = ModifyItemForm(request.POST, instance=item)
-                form.save()
-                return redirect(f'/lists/{list_id}/')
-            except:
-                return render(request, 'modify_list.html', {
-                'form': ModifyItemForm,
-                'error': "Error al modificar la lista"
-            })
+                if form.is_valid():
+                    modified_item = form.save(commit=False)  
+                    modified_item.last_modified = timezone.now()
+                    modified_item.modified_by = request.user  
+                    modified_item.save()  
+                    return redirect(f'/lists/{list_id}/')
+                else:
+                    return render(request, 'modify_item.html', {
+                    'form': form,
+                    'list': list, 
+                    'item': item,
+                    'error': "Error while modifying the item"
+                    })
+            except Exception as e:
+                return HttpResponse(f"Error al modificar la lista: {str(e)}", status=500)
+                # return render(request, 'modify_list.html', {
+                # 'form': ModifyItemForm,
+                # 'error': "Error al modificar la lista"
+                # })  
     else:
         raise Http404
+
+@login_required    
+def share_list(request, list_id):
+
+    list = get_object_or_404(List, pk=list_id)
+    return render(request, 'share_list.html', {
+        'url': "POR HACER",
+        'list': list
+    })

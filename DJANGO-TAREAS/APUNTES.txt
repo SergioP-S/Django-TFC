@@ -5,3 +5,12 @@ Falta añadir las funcionalidades de:
     Mejorar navegación
     Añadir validaciones, por ejemplo al crear un item, obligar a poner cantidad o peso
     Añadir campo a las tablas para representar cuando se realizo el último cambio y por quien
+
+    Generar key para invitar a una lista:
+        -Crear una tabla en la base de datos con las peticiones, en el que se genere una 
+        petición con el id de lista de la invitación y una clave generada de manera aleatoria,
+        si se accede por url y coincide el id de la lista y la clave con el registro de la base de datos, 
+        se añadirá el usuario a la lista, si no no.
+
+
+    Gestionar los usuarios que hay en una lista

@@ -40,7 +40,8 @@ urlpatterns = [
     path('update_items/', listsViews.update_items, name='update_multiple'),
     path('lists/<int:list_id>/empty_list', listsViews.empty_list, name='empty_list'),
     path('lists/<int:list_id>/modify', listsViews.modify_list, name='modify_list'),
-    path('lists/<int:list_id>/modify_item/<int:item_id>', listsViews.modify_item, name='modify_item')
+    path('lists/<int:list_id>/modify_item/<int:item_id>', listsViews.modify_item, name='modify_item'),
+    path('lists/<int:list_id>/share', listsViews.share_list, name='share_list')
     
 
 ]

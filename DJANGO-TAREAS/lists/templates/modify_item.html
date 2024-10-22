@@ -9,6 +9,7 @@
            <!--Modificar para acceder por url django-->
            <form action="{% url 'modify_item' list_id=list.id item_id=item.id %}" method="post">
             {% csrf_token %}
+            <p class="text text-danger">{{error}}</p>
             {{form.as_p}}
             <button>Save</button>
            </form>
