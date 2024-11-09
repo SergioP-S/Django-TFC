@@ -22,7 +22,7 @@ from lists import views as listsViews
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', tasksViews.home, name='home'),
+    path('', auth_appViews.home, name='home'),
     path('signup/',  auth_appViews.signup, name='signup'),
     path('signin/',  auth_appViews.signin, name='signin'),
     path('tasks/', tasksViews.tasks, name='tasks'),
@@ -36,12 +36,16 @@ urlpatterns = [
     path('lists/create/', listsViews.create_list, name='create_list'),
     path('lists/<int:list_id>/', listsViews.list_details, name='list_details'),
     path('lists/<int:list_id>/add_item/', listsViews.add_item, name='add_item'),
-    path('lists/<int:list_id>/delete_item/<int:item_id>', listsViews.delete_item, name='delete_item'),
+    path('lists/<int:list_id>/delete_item/<int:item_id>/', listsViews.delete_item, name='delete_item'),
     path('update_items/', listsViews.update_items, name='update_multiple'),
-    path('lists/<int:list_id>/empty_list', listsViews.empty_list, name='empty_list'),
-    path('lists/<int:list_id>/modify', listsViews.modify_list, name='modify_list'),
-    path('lists/<int:list_id>/modify_item/<int:item_id>', listsViews.modify_item, name='modify_item'),
-    path('lists/<int:list_id>/share', listsViews.share_list, name='share_list')
+    path('lists/<int:list_id>/empty_list/', listsViews.empty_list, name='empty_list'),
+    path('lists/<int:list_id>/modify/', listsViews.modify_list, name='modify_list'),
+    path('lists/<int:list_id>/modify_item/<int:item_id>/', listsViews.modify_item, name='modify_item'),
+    path('lists/<int:list_id>/delete/', listsViews.delete_list, name='delete_list'),
+    path('lists/<int:list_id>/kick/<str:collaborator>', listsViews.kick_collaborator, name='kick_collaborator'),
+
+    path('lists/<int:list_id>/share/', listsViews.share_list, name='share_list'),
+    path('lists/<int:list_id>/share/<str:signed_key>/', listsViews.accept_invitation, name='accept_invitation')
     
 
 ]

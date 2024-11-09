@@ -3,6 +3,19 @@ from django.contrib.auth.models import User
 
 
 class List(models.Model):
+    """
+    Represents a list entity with a name, description, creator, collaborators, and timestamps.
+    Attributes:
+        name (CharField): The name of the list, with a maximum length of 50 characters.
+        description (CharField): A brief description of the list, with a maximum length of 256 characters.
+        creator (ForeignKey): A reference to the User who created the list. If the user is deleted, the list is also deleted.
+        created_on (DateTimeField): The date and time when the list was created. Automatically set on creation.
+        collaborators (ManyToManyField): A set of Users who are collaborators on the list. Can be blank.
+        last_modified (DateTimeField): The date and time when the list was last modified. Automatically updated on modification.
+        modified_by (ForeignKey): A reference to the User who last modified the list. Can be blank or null.
+    Methods:
+        __str__: Returns a string representation of the list, including its name and the username of its creator.
+    """
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=256)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_lists")
@@ -15,6 +28,21 @@ class List(models.Model):
         return self.name + ' - de ' + self.creator.username
 
 class Item(models.Model):
+    """
+    Represents an item in a list.
+    Attributes:
+        list (ForeignKey): The list to which this item belongs.
+        added_by (ForeignKey): The user who added this item.
+        name (CharField): The name of the item.
+        quantity (IntegerField): The quantity of the item (optional).
+        weight (IntegerField): The weight of the item (optional).
+        added_on (DateTimeField): The date and time when the item was added.
+        is_done (BooleanField): Indicates whether the item is marked as done.
+        last_modified (DateTimeField): The date and time when the item was last modified.
+        modified_by (ForeignKey): The user who last modified this item (optional).
+    Methods:
+        __str__(): Returns a string representation of the item, including its name and the username of the user who added it.
+    """
     list = models.ForeignKey(List, on_delete=models.CASCADE)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='added_items')
     name = models.CharField(max_length=40)

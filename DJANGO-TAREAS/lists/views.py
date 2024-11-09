@@ -2,20 +2,25 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
-from .models import List, Item
+from .models import List, Item, User
 from django.db.models import Q
 from .forms import *
 import json
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+
+from django.core import signing
 
 @login_required
 def lists(request):
     """
-    Returns all lists created by the user or where the user is a collaborator
-
-    :param request: gets info about the request, such as method used (get or post) or user info. 
-    :return: returns lists.html view with a lists array 
+    View function to display lists for the logged-in user.
+    This function retrieves lists from the database where the logged-in user is either the creator or a collaborator.
+    The lists are ordered by their creation date and duplicates are removed.
+    Args:
+        request (HttpRequest): The HTTP request object containing metadata about the request.
+    Returns:
+        HttpResponse: The rendered 'lists.html' template with the context containing the title and the lists.
     """
 
     lists = List.objects.filter(Q(creator=request.user) | Q(collaborators=request.user)).order_by('created_on').distinct()
@@ -167,6 +172,7 @@ def empty_list(request, list_id):
     else:
         try:
             items = Item.objects.filter(list=list_id)
+            list = get_object_or_404(List, pk=list_id)
             print("Emptying list")
             print(items)
             items.delete()
@@ -175,7 +181,8 @@ def empty_list(request, list_id):
             #Falta agregar el redirect si falla
             return render(request, 'list_details.html', {
                 'title': 'Lists',
-                'error': "error"
+                'error': "error",
+                'list' : list
             })
 
 @login_required
@@ -237,6 +244,13 @@ def user_in_list(list_id, User):
     
 @login_required
 def modify_item(request, list_id, item_id):
+    """
+    Modifies the selected item
+
+    :param request: gets info about the request, such as method used (get or post) or user info.
+    :param list_id: pk of the list for redirect purposes
+    :param item_id: item that will be modified
+    """
 
     item = get_object_or_404(Item, pk=item_id)
     list = get_object_or_404(List, pk=list_id)
@@ -266,7 +280,7 @@ def modify_item(request, list_id, item_id):
                     'error': "Error while modifying the item"
                     })
             except Exception as e:
-                return HttpResponse(f"Error al modificar la lista: {str(e)}", status=500)
+                return HttpResponse(f"Error modifiying the list: {str(e)}", status=500)
                 # return render(request, 'modify_list.html', {
                 # 'form': ModifyItemForm,
                 # 'error': "Error al modificar la lista"
@@ -274,11 +288,142 @@ def modify_item(request, list_id, item_id):
     else:
         raise Http404
 
-@login_required    
-def share_list(request, list_id):
+@login_required
+def delete_list(request, list_id):
+    """
+    Delete a specific list if the request method is POST and the user is the creator of the list.
+    Args:
+        request (HttpRequest): The HTTP request object containing metadata about the request.
+        list_id (int): The ID of the list to be deleted.
+    Returns:
+        HttpResponseRedirect: Redirects to the 'lists' view if the list is successfully deleted.
+    Raises:
+        Http404: If the request method is not POST or the user is not the creator of the list.
+    """
 
     list = get_object_or_404(List, pk=list_id)
-    return render(request, 'share_list.html', {
-        'url': "POR HACER",
-        'list': list
-    })
+
+    if request.method == 'POST' and request.user == list.creator: 
+        list.delete()
+        return redirect('lists')
+    else:
+        raise Http404
+    
+
+
+
+
+def accept_invitation(request, list_id, signed_key):
+    """
+    Handles the acceptance of an invitation to collaborate on a list.
+    This function decodes the signed key to verify the invitation and checks if it has expired.
+    If the invitation is valid and not expired, it adds the requesting user as a collaborator
+    to the specified list.
+    Args:
+        request (HttpRequest): The HTTP request object.
+        list_id (int): The ID of the list to which the user is being invited.
+        signed_key (str): The signed key containing the invitation details.
+    Returns:
+        HttpResponse: Redirects to the list details page if the invitation is accepted.
+                        Renders an expired invitation page if the invitation has expired.
+                        Returns a bad request response if the signature is invalid or expired.
+    Raises:
+        signing.SignatureExpired: If the signed key has expired.
+        signing.BadSignature: If the signed key is invalid.
+    """
+    try:
+        # Decoding the signature
+        data = signing.loads(signed_key)
+        expires_at = data['expires_at']
+
+        # Verify if the invitation is expired
+        if timezone.now().timestamp() > expires_at:
+            return render(request, 'invitations/expired.html')  # CAMBIAR
+
+        # Store invitation details in session if user is not authenticated
+        if not request.user.is_authenticated:
+            request.session['invitation'] = {'list_id': list_id, 'signed_key': signed_key}
+            return redirect('signin')
+
+        # Get the list and add the user as a collaborator
+        list = get_object_or_404(List, id=list_id)
+        list.collaborators.add(request.user)  # Assuming you have a many-to-many relationship
+        list.save()
+
+        return redirect('list_details', list_id=list.id)
+
+    except signing.SignatureExpired:
+        return HttpResponseBadRequest("La invitación ha expirado.")
+    except signing.BadSignature:
+        return HttpResponseBadRequest("Invitación no válida.")
+
+@login_required
+def share_list(request, list_id):
+    """
+    Share a list by generating a signed URL with an expiration date.
+    This view handles the sharing of a list by creating a signed URL that includes
+    the list ID and an expiration timestamp. The URL is valid for one week from the
+    time of creation. The signed URL can be used to accept an invitation to access
+    the list.
+    Args:
+        request (HttpRequest): The HTTP request object.
+        list_id (int): The ID of the list to be shared.
+    Returns:
+        HttpResponse: If the request method is GET, renders the 'share_list.html' template
+                      with the list and the generated share URL.
+    """
+
+    list = get_object_or_404(List, pk=list_id)
+
+    # Establecer la fecha de caducidad (1 semana desde el momento actual)
+    expires_at = timezone.now() + timezone.timedelta(weeks=1)
+    expiration_timestamp = int(expires_at.timestamp())  # Pasamos la fecha de expiración a timestamp
+
+    # Crear una clave firmada que incluye el ID de la lista y la fecha de caducidad
+    data = {'list_id': list_id, 'expires_at': expiration_timestamp}
+    signed_key = signing.dumps(data)
+
+    # Generar la URL completa con la clave firmada
+    share_url = request.build_absolute_uri(reverse('accept_invitation', args=[list_id,signed_key]))
+
+    if request.method == 'GET':
+        return render(request, 'share_list.html', {
+            'list': list,
+            'share_url': share_url
+        })
+
+@login_required
+def kick_collaborator(request, collaborator, list_id):
+    """
+    Remove a collaborator from a list.
+    Args:
+        request (HttpRequest): The HTTP request object.
+        collaborator (str): The username of the collaborator to be removed.
+        list_id (int): The ID of the list from which the collaborator will be removed.
+    Raises:
+        Http404: If the request method is GET or if the list or collaborator does not exist.
+    Returns:
+        HttpResponse: Renders the 'list_details.html' template with the updated list.
+    """
+
+    list = get_object_or_404(List, pk=list_id)
+    collaborator = get_object_or_404(User, username = collaborator)
+
+    if request.method == 'GET':
+        raise Http404
+    else:
+        if collaborator in list.collaborators.all():
+            list.collaborators.remove(collaborator)
+            list.save()
+            return render(request, 'list_details.html', {
+                'title': 'Lists',
+                'list' : list
+            })
+        else:
+            return render(request, 'list_details.html', {
+                'title': 'Lists',
+                'error': "error",
+                'list' : list
+            })
+
+

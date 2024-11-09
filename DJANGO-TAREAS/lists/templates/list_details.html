@@ -47,29 +47,47 @@
                     </form>
                 </tbody>
             </table>
-            
-
         </div>
 
         
         <div class="col-md-6 border border-danger bg-light">
             <h2>Administrar lista</h2>
+            <h4>Info de la Lista</h4>
+            <p>Creado por: {{list.creator}}</p>
+            <p>Creado en: {{list.created_on}}</p>
+            <hr>
+
+            <h4>Gestionar la Lista</h4>
             {% if request.user == list.creator %}
                 <a class="btn btn-warning" href="{% url 'modify_list' list_id=list.id %}">Modificar Detalles de la lista</a>
-                <form method="POST" action="{% url 'empty_list' list_id=list.id %}">
+                <form method="POST" action="{% url 'empty_list' list_id=list.id %}" onsubmit="return confirmarEnvio(event, this)">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Vaciar Lista</button>
+                    <button type="submit" class="btn btn-outline-danger">Vaciar Lista</button>
                 </form>
+
+                <form method="POST" action="{% url 'delete_list' list_id=list.id %}" onsubmit="return confirmarEnvio(event, this)">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Eliminar Lista</button>
+                </form>
+
+                <a class="btn btn-primary" href="{% url 'share_list' list_id=list.id %}">Invitar Colaborador</a>
+
             {% else %}
                 <p class="text-danger">No tienes permisos para realizar esta acción</p>
             {% endif %}
-            <h4>Creador</h4>
-            {{list.creator}}
-            <h4>colaboradores</h4>
+            <hr>
+
+            <h4>Colaboradores</h4>
             <ul>
-                    {% for collaborator in list.collaborators.all %}
-                    <li>{{collaborator.username}}</li>
-                    {% endfor %}
+                {% for collaborator in list.collaborators.all %}
+                <li>{{collaborator.username}} </li>
+                    {% if request.user == list.creator %}
+                        <form method="POST" action="{% url 'kick_collaborator' list_id=list.id collaborator=collaborator.username %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">ELIMINAR COLABORADOR</button>
+                        </form>
+                    {% endif %}    
+                {% endfor %}
             </ul>
         </div>
     </div>
@@ -120,6 +138,27 @@
             .catch(error => console.error('Error:', error));
         });
     });
+</script>
+
+<script>
+    function confirmarEnvio(event, form) {
+        event.preventDefault(); // Prevents sending the form without confirmation
+
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Confirma que deseas enviar el formulario",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, enviar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();  // Sends the form if the user confirms the action
+            }
+        });
+    }
 </script>
 
 {% endblock %}

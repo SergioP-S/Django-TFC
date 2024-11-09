@@ -11,10 +11,6 @@ from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
-def home(request): 
-    return render(request, 'home.html')
-
-
 @login_required
 def tasks(request):
     #tasks = Task.objects.filter(user= request.user, date_completed__isnull = True) #Las tareas que se muestran serán las del usuario que ha iniciado sesión y que no se hayan completado

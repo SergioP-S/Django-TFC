@@ -10,6 +10,12 @@ from auth_app.forms import *
 
 # Create your views here.
 
+
+def home(request): 
+    return render(request, 'home.html')
+
+
+
 def signup(request):
  
     if request.method == 'GET': 
@@ -39,21 +45,34 @@ def signup(request):
     
 @login_required
 def signout(request):
+    """
+    Logs out the current user and redirects to the home page.
+
+    Args:
+        request (HttpRequest): The HTTP request object.
+
+    Returns:
+        HttpResponseRedirect: A redirect to the home page.
+    """
     logout(request)
     return redirect('home')
 
 def signin(request):
     if request.method == "GET": 
-      return render(request, 'signin.html',{
-        'form': CustomUserLoginForm
-    })
+        return render(request, 'signin.html', {
+            'form': CustomUserLoginForm
+        })
     else:
         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
-        if user is None: #Si el usuario está vacío (incorrecto o inexistente) se muestra de nuevo el login con un error
-             return render(request, 'signin.html',{
-            'form': CustomUserLoginForm,
-            'error': 'Las credenciales son incorrectas'
-        })
-        else: #Si las credenciales son correctas se arranca la sesión y se redirecciona a la vista tasks
+        if user is None:  # If the user is incorrect or does not exist, show the login form with an error
+            return render(request, 'signin.html', {
+                'form': CustomUserLoginForm,
+                'error': 'Las credenciales son incorrectas'
+            })
+        else:  # If the credentials are correct, start the session and redirect to the tasks view
             login(request, user)
+            # Check for pending invitation in session
+            invitation = request.session.pop('invitation', None)
+            if invitation:
+                return redirect('accept_invitation', list_id=invitation['list_id'], signed_key=invitation['signed_key'])
             return redirect('tasks')
