@@ -1,18 +1,15 @@
 {% extends 'base_lists.html' %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        
-        <div class="col-md-6 border border-danger bg-light">
-           <h1>New Item</h1>
-           <form action="/lists/{{list_id}}/add_item/" method="post">
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-12 col-md-9 col-lg-6 border p-4">
+        <h1>Añadir Item</h1>
+        <p>Rellene el formulario para agregar un nuevo item a la lista.</p>
+        <form action="/lists/{{list_id}}/add_item/" method="post">
             {% csrf_token %}
-            {{form}}
+            {{form.as_p}}
             <button>Submit</button>
-           </form>
-            
-        </div>
+        </form>
     </div>
 </div>
 {% endblock %}

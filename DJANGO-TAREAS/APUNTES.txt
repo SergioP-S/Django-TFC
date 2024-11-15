@@ -3,7 +3,7 @@ Falta añadir las funcionalidades de:
 
     Editar lista (nombre, descripcion...) --> HECHO, falta poder cambiar el nombre
 
-    Compartir enlace para entrar a las listas --> HECHO, falta corregir el error del login
+    Compartir enlace para entrar a las listas --> HECHO
 
     Mejorar navegación
 
@@ -11,16 +11,11 @@ Falta añadir las funcionalidades de:
 
     Añadir campo a las tablas para representar cuando se realizo el último cambio y por quien -->HECHO
 
-    Generar key para invitar a una lista:
-        -Crear una tabla en la base de datos con las peticiones, en el que se genere una 
-        petición con el id de lista de la invitación y una clave generada de manera aleatoria,
-        si se accede por url y coincide el id de la lista y la clave con el registro de la base de datos, 
-        se añadirá el usuario a la lista, si no no.
-
-
     Gestionar los usuarios que hay en una lista --> HECHO, permite eliminar e invitar usuarios.
 
+    Abandonar lista siendo colaborador --> HECHO
 
+    ¿Se deben eliminar los items añadidos por un colaborador que ha sido eliminado de la lista?
 
 POSIBLES FUNCIONALIDADES:
     -Añadir un máximo de precio por producto, el precio será opcional y el campo estará vacío,

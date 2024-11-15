@@ -75,4 +75,4 @@ def signin(request):
             invitation = request.session.pop('invitation', None)
             if invitation:
                 return redirect('accept_invitation', list_id=invitation['list_id'], signed_key=invitation['signed_key'])
-            return redirect('tasks')
+            return redirect('home')

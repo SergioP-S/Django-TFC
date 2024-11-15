@@ -32,13 +32,10 @@
                     <!--Condicional para mostrar las entradas del menú según si el usuario esta autenticado-->
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'tasks' %}">Pending Tasks</a>
+                            <a class="nav-link" href="{% url 'tasks' %}">Tasks</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'create' %}">Create Task</a>
-                        </li>
-                    <li class="nav-item">
-                            <a class="nav-link" href="{% url 'tasks_completed' %}">Completed Tasks</a>
+                            <a class="nav-link" href="{% url 'lists' %}">Lists</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'logout' %}">Log Out</a>

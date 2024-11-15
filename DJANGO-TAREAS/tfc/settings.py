@@ -107,8 +107,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Custom Backend for auth process
 AUTHENTICATION_BACKENDS = [
-    'auth_app.auth.custom_backend.CustomBackend',
     'django.contrib.auth.backends.ModelBackend',  # Default if necessary
+    'auth_app.auth.custom_backend.CustomBackend'
 ]
 
 # Internationalization

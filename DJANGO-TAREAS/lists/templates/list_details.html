@@ -3,18 +3,16 @@
 {% block content %}
 <div class="container"></div>
     <div class="row">
-        
         <div class="col-md-6 border border-danger bg-light">
-            <h2>{{ title }}</h2>
-            <p>{{ list.name }}</p>
+            <h2>{{ list.name }}</h2>
             <p>Creada en: {{ list.created_on }} por {{list.creator}}</p>
             <a class="btn btn-warning" href="{% url 'add_item' list.id %}">Add Item</a>
             
-            <table class="table">
+            <table class="table my-2">
                 <thead>
                     <tr>
-                        <th scope="col">Item Name</th>
-                        <th scope="col">Added by</th>
+                        <th scope="col">Item</th>
+                        <th scope="col">Añadido por</th>
                         <th scope="col">¿Completado?</th>  <!-- Nueva columna para el checkbox -->
                         <th scope="col">Acciones</th>
                     </tr>
@@ -31,13 +29,13 @@
                                 </td>
                                 <td>
                                     {% if item.added_by == request.user %}
-                                        <a class="btn btn-warning" href="{% url 'modify_item' list_id=list.id item_id=item.id%}">Editar</a>
+                                        <a class="btn btn-warning d-inline" href="{% url 'modify_item' list_id=list.id item_id=item.id%}">Editar</a>
                                     {% endif %}
                                     {% if item.added_by == request.user or list.creator == request.user %}
-                                    <form action="{% url 'delete_item' list_id=item.list.id item_id=item.id %}" method="post" onsubmit="confirm('¿Está seguro que quiere eliminar la tarea?')">
-                                        {% csrf_token %}
-                                        <button class="btn btn-danger">Borrar</button>
-                                    </form>
+                                        <form class="d-inline" action="{% url 'delete_item' list_id=item.list.id item_id=item.id %}" method="post" onsubmit="confirm('¿Está seguro que quiere eliminar la tarea?')">
+                                            {% csrf_token %}
+                                            <button class="btn btn-danger">Borrar</button>
+                                        </form>
                                     {% endif %}
                                 </td>
                             </tr>
@@ -51,26 +49,23 @@
 
         
         <div class="col-md-6 border border-danger bg-light">
-            <h2>Administrar lista</h2>
-            <h4>Info de la Lista</h4>
-            <p>Creado por: {{list.creator}}</p>
-            <p>Creado en: {{list.created_on}}</p>
-            <hr>
+            <h2>Panel de Administración</h2>
+            
 
             <h4>Gestionar la Lista</h4>
             {% if request.user == list.creator %}
-                <a class="btn btn-warning" href="{% url 'modify_list' list_id=list.id %}">Modificar Detalles de la lista</a>
+                <a class="btn btn-warning my-2" href="{% url 'modify_list' list_id=list.id %}">Modificar Detalles de la lista</a>
                 <form method="POST" action="{% url 'empty_list' list_id=list.id %}" onsubmit="return confirmarEnvio(event, this)">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-danger">Vaciar Lista</button>
+                    <button type="submit" class="btn btn-outline-danger my-2">Vaciar Lista</button>
                 </form>
 
                 <form method="POST" action="{% url 'delete_list' list_id=list.id %}" onsubmit="return confirmarEnvio(event, this)">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">Eliminar Lista</button>
+                    <button type="submit" class="btn btn-danger my-2">Eliminar Lista</button>
                 </form>
 
-                <a class="btn btn-primary" href="{% url 'share_list' list_id=list.id %}">Invitar Colaborador</a>
+                <a class="btn btn-primary my-2" href="{% url 'share_list' list_id=list.id %}">Invitar Colaborador</a>
 
             {% else %}
                 <p class="text-danger">No tienes permisos para realizar esta acción</p>
@@ -79,16 +74,29 @@
 
             <h4>Colaboradores</h4>
             <ul>
-                {% for collaborator in list.collaborators.all %}
-                <li>{{collaborator.username}} </li>
-                    {% if request.user == list.creator %}
-                        <form method="POST" action="{% url 'kick_collaborator' list_id=list.id collaborator=collaborator.username %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger">ELIMINAR COLABORADOR</button>
-                        </form>
-                    {% endif %}    
-                {% endfor %}
+                {% if list.collaborators.all %}
+                    {% for collaborator in list.collaborators.all %}
+                        <li>{{collaborator.username}} </li>
+                        {% if request.user == list.creator %}
+                            <form method="POST" action="{% url 'kick_collaborator' list_id=list.id collaborator=collaborator.username %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">ELIMINAR COLABORADOR</button>
+                            </form>
+                        {% endif %}    
+                    {% endfor %}
+                {% else %}
+                    <p>No hay colaboradores.</p>
+                {% endif %}
+
+            {% if request.user in list.collaborators.all %}
+                <form method="POST" action="{% url 'leave_list' list_id=list.id %}" onsubmit="return confirmarEnvio(event, this)">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Leave List</button>
+            </form>
+            {% endif %}
             </ul>
+
+                
         </div>
     </div>
 </div>

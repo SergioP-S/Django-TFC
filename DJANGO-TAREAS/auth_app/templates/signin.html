@@ -1,15 +1,16 @@
 {% extends 'base_auth.html' %} <!--Para usar el template llamado base.html-->
 
-
 {% block content%}
-<h2>Log in</h2>
-<p>Inicia sesion colega</p>
-<p style="color: red;">{{error}}</p>
-
-<form action="/signin/" method="post">
-    {% csrf_token %}
-    {{form.as_p}}
-    <button>Sign In</button>
-</form>
-
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-12 col-md-6 col-lg-4 border p-4">
+        <h2>Log in</h2>
+        <p>Inicia sesion colega</p>
+        <p style="color: red;">{{error}}</p>
+        <form action="/signin/" method="post">
+            {% csrf_token %}
+            {{form.as_p}}
+            <button class="btn btn-primary btn-block">Sign In</button>
+        </form>
+    </div>
+</div>
 {% endblock %}

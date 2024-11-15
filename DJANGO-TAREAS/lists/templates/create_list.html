@@ -1,18 +1,15 @@
 {% extends 'base_lists.html' %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        
-        <div class="col-md-6 border border-danger bg-light">
-           <h1>Create List</h1>
-           <form action="/lists/create/" method="post">
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-12 col-md-9 col-lg-6 border p-4">
+        <h1>Crear Lista</h1>
+        <p>Tu familia o amigos podrán añadir items, o consultar los que ya estén.</p>
+        <form action="/lists/create/" method="post">
             {% csrf_token %}
-            {{form}}
-            <button>Submit</button>
-           </form>
-            
-        </div>
+            {{form.as_p}}
+            <button class="btn btn-primary mt-3">Submit</button>
+        </form>
     </div>
 </div>
 {% endblock %}
