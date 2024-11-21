@@ -118,8 +118,8 @@ def add_item(request, list_id):
             new_item.added_by = request.user
             new_item.list = list_obj
             new_item.save()
-            return redirect('lists')
-        
+            items = Item.objects.filter(list=list_obj).order_by('added_on')
+            return redirect('list_details', list_id=list_id)
         except:
             return render(request, 'add_item.html', {
             'form': ListForm,
@@ -535,3 +535,18 @@ def leave_list(request, list_id):
             return redirect('lists')
         else:
             return HttpResponseBadRequest("No eres colaborador de esta lista.")
+
+@login_required
+def complete_list(request, list_id):
+    """
+    Mark all items in a list as completed.
+    Args:
+        request (HttpRequest): The HTTP request object.
+        list_id (int): The ID of the list to be completed.
+    Returns:
+        HttpResponseRedirect: Redirects to the list details page after marking all items as completed.
+    """
+    list_obj = get_object_or_404(List, pk=list_id)
+    items = Item.objects.filter(list=list_obj)
+    items.update(is_done=True)
+    return redirect('list_details', list_id=list_id)

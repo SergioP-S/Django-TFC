@@ -45,7 +45,8 @@ urlpatterns = [
     path('lists/<int:list_id>/kick/<str:collaborator>', listsViews.kick_collaborator, name='kick_collaborator'),
     path('lists/<int:list_id>/leave/', listsViews.leave_list, name='leave_list'),
     path('lists/<int:list_id>/share/', listsViews.share_list, name='share_list'),
-    path('lists/<int:list_id>/share/<str:signed_key>/', listsViews.accept_invitation, name='accept_invitation')
+    path('lists/<int:list_id>/share/<str:signed_key>/', listsViews.accept_invitation, name='accept_invitation'),
+    path('lists/<int:list_id>/complete/', listsViews.complete_list, name='complete_list')
     
 
 ]

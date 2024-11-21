@@ -13,7 +13,8 @@
                     <tr>
                         <th scope="col">Item</th>
                         <th scope="col">Añadido por</th>
-                        <th scope="col">¿Completado?</th>  <!-- Nueva columna para el checkbox -->
+                        <th scope="col">Cant/Peso</th>
+                        <th scope="col">¿Completado?</th>
                         <th scope="col">Acciones</th>
                     </tr>
                 </thead>
@@ -24,12 +25,20 @@
                                 <th scope="row">{{ item.name }}</th>
                                 <td>{{ item.added_by }}</td>
                                 <td>
+                                    {% if item.quantity %}
+                                        <p>{{ item.quantity }} uds</p>
+                                    {% endif %}
+                                    {% if item.weight %}
+                                        <p>{{ item.weight }} gr</p>
+                                    {% endif %}
+                                </td>
+                                <td>
                                     <!-- Checkbox para marcar si está completado -->
                                     <input type="checkbox" class="is-done-checkbox" data-item-id="{{ item.id }}" {% if item.is_done %}checked{% endif %}>
                                 </td>
                                 <td>
                                     {% if item.added_by == request.user %}
-                                        <a class="btn btn-warning d-inline" href="{% url 'modify_item' list_id=list.id item_id=item.id%}">Editar</a>
+                                        <a class="btn btn-warning d-inline" href="{% url 'modify_item' list_id=list.id item_id=item.id %}">Editar</a>
                                     {% endif %}
                                     {% if item.added_by == request.user or list.creator == request.user %}
                                         <form class="d-inline" action="{% url 'delete_item' list_id=item.list.id item_id=item.id %}" method="post" onsubmit="confirm('¿Está seguro que quiere eliminar la tarea?')">
@@ -41,7 +50,8 @@
                             </tr>
                         {% endfor %}
                         <!-- Botón para guardar todos los cambios -->
-                        <button type="button" id="save-changes" class="btn btn-primary">Guardar cambios</button>
+                        <button type="button" id="save-changes" class="btn btn-primary mx-2">Guardar cambios</button>
+                        <button type="button" id="complete-list" class="btn btn-success mx-2">Completar lista</button>
                     </form>
                 </tbody>
             </table>
@@ -95,7 +105,6 @@
             </form>
             {% endif %}
             </ul>
-
                 
         </div>
     </div>
@@ -145,6 +154,53 @@
             })
             .catch(error => console.error('Error:', error));
         });
+
+        // Al hacer clic en "Completar lista"
+        document.getElementById('complete-list').addEventListener('click', function () {
+            fetch('{% url "complete_list" list_id=list.id %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',  // Token CSRF para proteger la solicitud
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Todos los elementos han sido completados.");
+                    location.reload();  // Recargar la página para reflejar los cambios
+                } else {
+                    alert("Error al completar la lista.");
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        // Función para comprobar elementos similares
+        function checkSimilarItems() {
+            const items = document.querySelectorAll('tbody tr');
+            const itemNames = [];
+
+            items.forEach(function (item) {
+                const itemName = item.querySelector('th').innerText.toLowerCase().replace(/[^a-z0-9áéíóúüñ]/g, '');
+                if (itemNames.includes(itemName)) {
+                    const warningButton = document.createElement('button');
+                    warningButton.className = 'btn btn-outline-warning';
+                    warningButton.innerHTML = 'warningicon';
+                    warningButton.addEventListener('click', function () {
+                        Swal.fire({
+                            title: 'Elemento duplicado',
+                            text: 'Este elemento parece ser un duplicado de otro en la lista.',
+                            icon: 'warning',
+                            confirmButtonText: 'Entendido'
+                        });
+                    });
+                    item.querySelector('td:last-child').appendChild(warningButton);
+                } else {
+                    itemNames.push(itemName);
+                }
+            });
+        }
+
+        checkSimilarItems();
     });
 </script>
 
@@ -154,7 +210,7 @@
 
         Swal.fire({
             title: '¿Estás seguro?',
-            text: "Confirma que deseas enviar el formulario",
+            html: '<span style="color: red;">Los cambios serán irreversibles.</span>',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#3085d6',
