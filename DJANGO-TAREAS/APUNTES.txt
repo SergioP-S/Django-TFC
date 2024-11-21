@@ -32,7 +32,3 @@ POSIBLES FUNCIONALIDADES:
     solo se añadirá valor si el usuario lo desea.
 
     -Añadir Breadcrumb?
-
-
-
-    BRANCH
