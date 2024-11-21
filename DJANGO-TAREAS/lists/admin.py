@@ -1,10 +1,20 @@
 from django.contrib import admin
-from .models import List, Item
+from .models import List, Item, Tag
+from .forms import AddTagForm
 
 class ListAdmin(admin.ModelAdmin):
-      readonly_fields = ( "created_on", "last_modified") #Falta añadir el campo modified_by
-admin.site.register(List, ListAdmin) #Se registra el modelo en el panel de administración
+      readonly_fields = ( "created_on", "last_modified", "modified_by") #setting some fields to readonly
+admin.site.register(List, ListAdmin) #the model is registered into the admin panel
 
 class ItemAdmin(admin.ModelAdmin):
-      readonly_fields = ("added_on","last_modified") #setting some fields to readonly
-admin.site.register(Item, ItemAdmin) #the model is registered into the admin panel
+      readonly_fields = ("added_on","last_modified") 
+admin.site.register(Item, ItemAdmin) 
+
+class TagAdmin(admin.ModelAdmin):
+      form = AddTagForm #using the form to add a tag
+      fieldsets = (
+        (None, {
+            'fields': (('name', 'color'),'list')
+            }),
+        )
+admin.site.register(Tag, TagAdmin) #the model is registered into the admin panel

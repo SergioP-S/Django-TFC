@@ -23,31 +23,17 @@ class List(models.Model):
     collaborators = models.ManyToManyField(User, related_name="collaborated_lists", blank=True)
     last_modified = models.DateTimeField(auto_now=True)
     modified_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    
 
     def __str__(self): #método para mostrar el título cuando se quiera mostrar un registro, por ejemplo en el panel admin
         return self.name + ' - de ' + self.creator.username
 
 class Item(models.Model):
-    """
-    Represents an item in a list.
-    Attributes:
-        list (ForeignKey): The list to which this item belongs.
-        added_by (ForeignKey): The user who added this item.
-        name (CharField): The name of the item.
-        quantity (IntegerField): The quantity of the item (optional).
-        weight (IntegerField): The weight of the item (optional).
-        added_on (DateTimeField): The date and time when the item was added.
-        is_done (BooleanField): Indicates whether the item is marked as done.
-        last_modified (DateTimeField): The date and time when the item was last modified.
-        modified_by (ForeignKey): The user who last modified this item (optional).
-    Methods:
-        __str__(): Returns a string representation of the item, including its name and the username of the user who added it.
-    """
+  
     list = models.ForeignKey(List, on_delete=models.CASCADE)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='added_items')
     name = models.CharField(max_length=40)
-    quantity = models.IntegerField(null=True, blank=True)
-    weight = models.IntegerField(null=True, blank=True)
+    description = models.CharField(max_length=256)
     added_on = models.DateTimeField(auto_now_add=True)
     is_done = models.BooleanField(null=False, default=False)
     last_modified = models.DateTimeField(auto_now=True)
@@ -55,3 +41,11 @@ class Item(models.Model):
 
     def __str__(self): #método para mostrar el título cuando se quiera mostrar un registro, por ejemplo en el panel admin
         return self.name + ' - added by ' + self.added_by.username
+    
+class Tag(models.Model):
+    name = models.CharField(max_length=40)
+    color = models.CharField(max_length=7, default="#007bff")
+    list = models.ForeignKey(List, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name + " - Lista: " + self.list.name

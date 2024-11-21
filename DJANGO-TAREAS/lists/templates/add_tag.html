@@ -1,0 +1,15 @@
+{% extends 'base_lists.html' %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-12 col-md-9 col-lg-6 border p-4">
+        <h1>Añadir Tag</h1>
+        <p>Rellene el formulario para agregar una etiqueta a la lista </p>
+        <form action="/lists/{{list_id}}/add_tag/" method="post">
+            {% csrf_token %}
+            {{form.as_p}}
+            <button class="btn btn-primary mt-3">Submit</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

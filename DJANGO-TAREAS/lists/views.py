@@ -49,10 +49,12 @@ def list_details(request, list_id):
 
     list = get_object_or_404(List.objects.filter(Q(creator=request.user) | Q(collaborators=request.user)).distinct(),pk=list_id)
     items = Item.objects.filter(list=list_id).order_by('added_on')
+    tags = Tag.objects.filter(list=list_id)
     return render(request, 'list_details.html',{
         'title': "Detalles de la lista",
         'list': list,
-        'items': items
+        'items': items,
+        'tags': tags
     })
 
 @login_required
@@ -550,3 +552,56 @@ def complete_list(request, list_id):
     items = Item.objects.filter(list=list_obj)
     items.update(is_done=True)
     return redirect('list_details', list_id=list_id)
+
+def add_tag(request, list_id):
+    """
+    Handles the addition of a new tag to a specific list.
+    Args:
+    request (HttpRequest): The HTTP request object containing metadata about the request.
+    list_id (int): The ID of the list to which the tag will be added.
+    Returns:
+    HttpResponse: Renders the 'add_tag.html' template with a form if the request method is GET.
+    HttpResponseRedirect: Redirects to the list details page if the tag is successfully added.
+    HttpResponse: Renders the 'add_tag.html' template with an error message if there is an exception.
+    Raises:
+    Http404: If the list with the given list_id does not exist.
+    """
+
+    list_obj = get_object_or_404(List, pk=list_id)
+
+    if request.method == 'GET': 
+        return render(request, 'add_tag.html', {
+            'form': AddTagForm,
+            'list_id': list_id
+        })
+    else:
+        try:
+            form = AddTagForm(request.POST)
+            new_tag = form.save(commit=False)
+            new_tag.list = list_obj
+            new_tag.save()
+            tags = Tag.objects.filter(list=list_obj)
+            return redirect('list_details', list_id=list_id)
+        except:
+            return render(request, 'add_tag.html', {
+            'form': AddTagForm,
+            'error': 'Error, introduzca datos válidos'
+            })
+        
+@login_required
+def delete_tags(request, list_id):
+    """
+    Deletes selected tags from a list if the request method is POST.
+    Args:
+        request (HttpRequest): The HTTP request object.
+        list_id (int): The ID of the list containing the tags.
+    Returns:
+        HttpResponseRedirect: Redirects to the list details page if the tags are successfully deleted.
+        HttpResponse: Returns a 404 response if the request method is not POST or the tags do not exist.
+    """
+    if request.method == 'POST':
+        selected_tags = request.POST.getlist('selected_tags')
+        Tag.objects.filter(id__in=selected_tags, list_id=list_id).delete()
+        return redirect('list_details', list_id=list_id)
+    else:
+        return Http404

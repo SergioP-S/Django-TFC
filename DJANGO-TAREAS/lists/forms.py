@@ -1,5 +1,6 @@
 from django.forms import ModelForm
-from .models import List, Item
+from django.forms.widgets import TextInput
+from .models import List, Item, Tag
 
 
 class ListForm(ModelForm):
@@ -10,7 +11,7 @@ class ListForm(ModelForm):
 class NewItemForm(ModelForm):
     class Meta: 
         model = Item
-        fields = ['name', 'quantity', 'weight'] 
+        fields = ['name', 'description']
 
 #Form to set an item as done
 class ItemStatusForm(ModelForm):
@@ -26,4 +27,12 @@ class ModifyListForm(ModelForm):
 class ModifyItemForm(ModelForm):
     class Meta:
         model = Item
-        fields = ['name','quantity', 'weight'] 
+        fields = ['name', 'description']
+
+class AddTagForm(ModelForm):
+    class Meta:
+        model = Tag
+        fields = ['name', 'color']
+        widgets = {
+            'color': TextInput(attrs={'type': 'color'}),
+        }

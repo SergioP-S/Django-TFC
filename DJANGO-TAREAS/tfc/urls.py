@@ -46,7 +46,10 @@ urlpatterns = [
     path('lists/<int:list_id>/leave/', listsViews.leave_list, name='leave_list'),
     path('lists/<int:list_id>/share/', listsViews.share_list, name='share_list'),
     path('lists/<int:list_id>/share/<str:signed_key>/', listsViews.accept_invitation, name='accept_invitation'),
-    path('lists/<int:list_id>/complete/', listsViews.complete_list, name='complete_list')
+    path('lists/<int:list_id>/complete/', listsViews.complete_list, name='complete_list'),
+    path('lists/<int:list_id>/add_tag/', listsViews.add_tag, name='add_tag'),
+    path('lists/<int:list_id>/delete_tags/', listsViews.delete_tags, name='delete_tags'),
     
+       
 
 ]

@@ -1,19 +1,26 @@
 {% extends 'base_lists.html' %}
 
 {% block content %}
+
 <div class="container"></div>
     <div class="row">
         <div class="col-md-6 border border-danger bg-light">
             <h2>{{ list.name }}</h2>
             <p>Creada en: {{ list.created_on }} por {{list.creator}}</p>
+            <p><b>Tags:</b> 
+                <a class="btn btn-warning d-inline" href="{% url 'add_tag' list_id=list.id %}">+ Tag</a>
+                {% for tag in tags %}
+                    <p>{{ tag.name }}, {{ tag.color }}</p>
+                {% endfor %}
+            </p>
             <a class="btn btn-warning" href="{% url 'add_item' list.id %}">Add Item</a>
             
             <table class="table my-2">
                 <thead>
                     <tr>
                         <th scope="col">Item</th>
+                        <th scope="col">Descripción</th>
                         <th scope="col">Añadido por</th>
-                        <th scope="col">Cant/Peso</th>
                         <th scope="col">¿Completado?</th>
                         <th scope="col">Acciones</th>
                     </tr>
@@ -23,15 +30,14 @@
                         {% for item in items %}
                             <tr>
                                 <th scope="row">{{ item.name }}</th>
-                                <td>{{ item.added_by }}</td>
                                 <td>
-                                    {% if item.quantity %}
-                                        <p>{{ item.quantity }} uds</p>
-                                    {% endif %}
-                                    {% if item.weight %}
-                                        <p>{{ item.weight }} gr</p>
+                                    {% if item.description %}
+                                        <p>{{ item.description }}</p>
+                                    {% else %}
+                                        <p>Vacío</p>
                                     {% endif %}
                                 </td>
+                                <td>{{ item.added_by }}</td>
                                 <td>
                                     <!-- Checkbox para marcar si está completado -->
                                     <input type="checkbox" class="is-done-checkbox" data-item-id="{{ item.id }}" {% if item.is_done %}checked{% endif %}>
@@ -76,6 +82,9 @@
                 </form>
 
                 <a class="btn btn-primary my-2" href="{% url 'share_list' list_id=list.id %}">Invitar Colaborador</a>
+
+                <a class="btn btn-secondary my-2" id="manage-items">Gestionar Items</a>
+                <a class="btn btn-secondary my-2" id="manage-tags">Gestionar Tags</a>
 
             {% else %}
                 <p class="text-danger">No tienes permisos para realizar esta acción</p>
@@ -201,6 +210,83 @@
         }
 
         checkSimilarItems();
+
+        function manageItems() {
+            const itemsHtml = `
+                <form id="manage-items-form">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Seleccionar</th>
+                                <th scope="col">Item</th>
+                                <th scope="col">Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in items %}
+                            <tr>
+                                <td><input type="checkbox" name="selected_items" value="{{ item.id }}"></td>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.description }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </form>
+            `;
+
+            Swal.fire({
+                title: 'Gestionar Items',
+                html: itemsHtml,
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar seleccionados',
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    const selectedItems = Array.from(document.querySelectorAll('input[name="selected_items"]:checked')).map(cb => cb.value);
+                    return selectedItems;
+                }
+            })
+        }
+
+        document.getElementById('manage-items').addEventListener('click', manageItems);
+        
+
+        function manageTags() {
+            const tagsHtml = `
+                <form id="manage-tags-form" method="post" action="{% url 'delete_tags' list_id=list.id %}">
+                    {% csrf_token %}
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Tag</th>
+                                <th scope="col">Seleccionar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for tag in tags %}
+                            <tr>
+                                <td><div class='my-5 mx-4' style='background-color:{{tag.color}};'>{{ tag.name }}</div></td>
+                                <td><input type="checkbox" name="selected_tags" value="{{ tag.id }}"></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <button type="submit" class="btn btn-danger">Eliminar seleccionados</button>
+                </form>
+            `;
+
+            Swal.fire({
+                title: 'Gestionar Tags',
+                html: tagsHtml,
+                showCancelButton: false,
+                confirmButtonText: 'Ok',
+                preConfirm: () => {
+                    document.getElementById('manage-tags-form').submit();
+                }
+            });
+        }
+
+        document.getElementById('manage-tags').addEventListener('click', manageTags);
     });
 </script>
 
