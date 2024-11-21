@@ -49,6 +49,8 @@ urlpatterns = [
     path('lists/<int:list_id>/complete/', listsViews.complete_list, name='complete_list'),
     path('lists/<int:list_id>/add_tag/', listsViews.add_tag, name='add_tag'),
     path('lists/<int:list_id>/delete_tags/', listsViews.delete_tags, name='delete_tags'),
+
+    path('user_details/<str:username>', auth_appViews.user_details, name='user_details'),
     
        
 

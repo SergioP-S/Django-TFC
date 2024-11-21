@@ -1,0 +1,14 @@
+{% extends 'base_auth.html' %} <!--Para usar el template llamado base.html-->
+
+{% block content%}
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-12 col-md-9 col-lg-6 border p-4">
+        <h2>User details</h2>
+        {{user_info.username}}
+        <br>
+        {{user_info.email}}
+
+        <p>Me Gusta: 88</p>
+    </div>
+</div>
+{% endblock %}

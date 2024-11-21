@@ -95,7 +95,8 @@
             <ul>
                 {% if list.collaborators.all %}
                     {% for collaborator in list.collaborators.all %}
-                        <li>{{collaborator.username}} </li>
+                    
+                        <li><a href="{% url 'user_details' username=collaborator.username %}">{{collaborator.username}}</a></li>
                         {% if request.user == list.creator %}
                             <form method="POST" action="{% url 'kick_collaborator' list_id=list.id collaborator=collaborator.username %}">
                                 {% csrf_token %}

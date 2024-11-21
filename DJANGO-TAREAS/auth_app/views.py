@@ -76,3 +76,12 @@ def signin(request):
             if invitation:
                 return redirect('accept_invitation', list_id=invitation['list_id'], signed_key=invitation['signed_key'])
             return redirect('home')
+        
+
+
+def user_details(request, username): 
+    user = get_object_or_404(User, username=username)
+    if request.method == 'GET': 
+        return render(request, 'user_details.html', {
+            'user_info': user
+        })
