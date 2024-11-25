@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404, render, redirect
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
@@ -85,3 +85,12 @@ def user_details(request, username):
         return render(request, 'user_details.html', {
             'user_info': user
         })
+    
+
+def complete_profile(request): 
+    if request.method == 'GET':
+            return render(request, 'complete_profile.html', {
+            'form': ProfileForm,
+        })
+    else:
+        raise Http404

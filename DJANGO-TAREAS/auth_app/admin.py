@@ -3,4 +3,4 @@ from .models import Profile
 
 class ProfileAdmin(admin.ModelAdmin):
     readonly_fields = ("likes",) 
-admin.site.register(Profile, ProfileAdmin) 
+admin.site.register(Profile, ProfileAdmin)

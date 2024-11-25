@@ -32,3 +32,12 @@ POSIBLES FUNCIONALIDADES:
     solo se añadirá valor si el usuario lo desea.
 
     -Añadir Breadcrumb?
+
+
+EXAMS
+
+myexams.html  --> mostrará los examenes de los que se forma parte
+create_exam.html -->Formulario para crear examen
+create_question.html --> Formilario para crear pregunta de un examen
+manage_exam.html --> Panel de administración del examen
+manage_permits.html --> permite establecer roles en los colaboradores de la lista
