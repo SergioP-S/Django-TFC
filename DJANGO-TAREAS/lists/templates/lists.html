@@ -1,29 +1,24 @@
 {% extends 'base_lists.html' %}
 
 {% block content %}
-<h1>{{title}}</h1>
-<p>Verde = Creador, Amarilla = Colaborador</p>
+<div class="container col-12 col-md-10 col-lg-8 border p-4 mx-auto mt-4 text-white">
+    <h1 class="text-dark">{{title}}</h1>
+    <p class="text-dark">Verde = Creador, Amarilla = Colaborador</p>
     {% for list in lists %}
-
     {% if request.user == list.creator %}
-    <div class="container border border-success p-2 m-3">
+    <div class="container bg-success p-2 m-3">
     {% else %}
-    <div class="container border border-warning p-2 m-3">
+    <div class="container bg-warning p-2 m-3">
     {% endif %}
         <h3>
             {{list.name}}
         </h3>
         <p>Colaboradores:</p>
-
         {% for collaborator in list.collaborators.all %}
         <p>{{collaborator.username}}</p>
         {% endfor %}
-
-        <a class="btn btn-success" href="{% url 'list_details' list.id %}">Show more</a>
-        
+        <a class="btn btn-dark" href="{% url 'list_details' list.id %}">Show more</a>
     </div>
-        
-
-
     {% endfor %}
+</div>
 {% endblock %}

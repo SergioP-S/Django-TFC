@@ -93,4 +93,14 @@ def complete_profile(request):
             'form': ProfileForm,
         })
     else:
-        raise Http404
+        form = ProfileForm(request.POST, request.FILES)
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
+            return redirect('home')
+        else:
+            return render(request, 'complete_profile.html', {
+                'form': ProfileForm,
+                'error': 'Error al completar el formulario'
+            })
