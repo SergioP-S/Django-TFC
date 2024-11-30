@@ -2,27 +2,92 @@
 
 {% block content%}
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-    <div class="col-12 col-md-6 col-lg-4 border p-4">
+    <div class="col-12 col-md-9 col-lg-6 border p-4">
         <h2>Complete User Info  </h2>
-        <p>Completa o modifica la información de tu perfil</p>
+        <p>Hola {{request.user}}, completa tu perfil</p>
         <p style="color: red;">{{error}}</p>
         <form action="#" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             {{form.as_p}}
-            <div class="form-group">
-                <label for="pic">Profile Picture</label>
-                <input type="file" name="pic" id="pic" accept="image/*" class="form-control" onchange="loadFile(event)">
-                <img id="output" width="180" height="180" style="display:none;"/>
+            <div>
+                <label for="id_pic">Profile Picture:</label>
+                <input type="file" id="id_pic" name="pic" accept="image/*" onchange="previewImage(event)">
+                <div id="image-preview-container" style="display:none;">
+                    <img id="image-preview" style="max-width: 100%; max-height: 300px; object-fit: cover;">
+                </div>
             </div>
-            <button class="btn btn-primary btn-block">Complete Profile</button>
+            <input type="hidden" id="cropped_image_data" name="cropped_image_data">
+            <button>Completar Perfil</button>
         </form>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
 <script>
-    function loadFile(event) {
-        var output = document.getElementById('output');
-        output.src = URL.createObjectURL(event.target.files[0]);
-        output.style.display = 'block';
+    function previewImage(event) {
+        const input = event.target;
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                Swal.fire({
+                    title: 'Crop your image',
+                    html: `
+                        <img id="preview" style="max-width: 100%; max-height: 300px; object-fit: cover;">
+                        <div>
+                            <img id="cropperjs" src="${e.target.result}" style="max-width: 100%; max-height: 300px; object-fit: cover;">
+                        </div>
+                    `,
+                    willOpen: () => {
+                        const image = Swal.getPopup().querySelector('#cropperjs');
+                        const cropper = new Cropper(image, {
+                            aspectRatio: 1,
+                            viewMode: 1,
+                            crop: throttle(function() {
+                                const croppedCanvas = cropper.getCroppedCanvas();
+                                const preview = Swal.getPopup().querySelector('#preview');
+                                preview.src = croppedCanvas.toDataURL();
+                            }, 25),
+                        });
+                    },
+                    preConfirm: () => {
+                        const croppedCanvas = Swal.getPopup().querySelector('#cropperjs').cropper.getCroppedCanvas();
+                        return croppedCanvas.toDataURL();
+                    },
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        document.getElementById('image-preview').src = result.value;
+                        document.getElementById('image-preview-container').style.display = 'block';
+                        document.getElementById('cropped_image_data').value = result.value;
+                    }
+                });
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function throttle(func, limit) {
+        let lastFunc;
+        let lastRan;
+        return function() {
+            const context = this;
+            const args = arguments;
+            if (!lastRan) {
+                func.apply(context, args);
+                lastRan = Date.now();
+            } else {
+                clearTimeout(lastFunc);
+                lastFunc = setTimeout(function() {
+                    if ((Date.now() - lastRan) >= limit) {
+                        func.apply(context, args);
+                        lastRan = Date.now();
+                    }
+                }, limit - (Date.now() - lastRan));
+            }
+        }
     }
 </script>
 {% endblock %}

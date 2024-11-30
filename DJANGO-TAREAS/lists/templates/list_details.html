@@ -4,7 +4,7 @@
 
 <div class="container"></div>
     <div class="row">
-        <div class="col-md-6 border border-danger bg-light">
+        <div id="items-container" class="col-12 col-md-10 col-lg-8 border border-danger bg-light mx-auto">
             <h2>{{ list.name }}</h2>
             <p>Creada en: {{ list.created_on }} por {{list.creator}}</p>
             <p><b>Tags:</b> 
@@ -14,6 +14,7 @@
                 {% endfor %}
             </p>
             <a class="btn btn-warning" href="{% url 'add_item' list.id %}">Add Item</a>
+            <button class="btn btn-primary" id="toggle-admin-panel">Mostrar Panel de Administración</button>
             
             <table class="table my-2">
                 <thead>
@@ -26,46 +27,49 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <form id="update-form">  <!-- Formulario para enviar todos los cambios -->
-                        {% for item in items %}
-                            <tr>
-                                <th scope="row">{{ item.name }}</th>
-                                <td>
-                                    {% if item.description %}
-                                        <p>{{ item.description }}</p>
-                                    {% else %}
-                                        <p>Vacío</p>
-                                    {% endif %}
-                                </td>
-                                <td>{{ item.added_by }}</td>
-                                <td>
-                                    <!-- Checkbox para marcar si está completado -->
-                                    <input type="checkbox" class="is-done-checkbox" data-item-id="{{ item.id }}" {% if item.is_done %}checked{% endif %}>
-                                </td>
-                                <td>
-                                    {% if item.added_by == request.user %}
-                                        <a class="btn btn-warning d-inline" href="{% url 'modify_item' list_id=list.id item_id=item.id %}">Editar</a>
-                                    {% endif %}
-                                    {% if item.added_by == request.user or list.creator == request.user %}
-                                        <form class="d-inline" action="{% url 'delete_item' list_id=item.list.id item_id=item.id %}" method="post" onsubmit="confirm('¿Está seguro que quiere eliminar la tarea?')">
-                                            {% csrf_token %}
-                                            <button class="btn btn-danger">Borrar</button>
-                                        </form>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                        <!-- Botón para guardar todos los cambios -->
-                        <button type="button" id="save-changes" class="btn btn-primary mx-2">Guardar cambios</button>
-                        <button type="button" id="complete-list" class="btn btn-success mx-2">Completar lista</button>
-                    </form>
+                    {% for item in items %}
+                        <tr>
+                            <th scope="row">{{ item.name }}</th>
+                            <td>
+                                {% if item.description %}
+                                    <p>{{ item.description }}</p>
+                                {% else %}
+                                    <p>Vacío</p>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.added_by }}</td>
+                            <td>
+                                <!-- Checkbox para marcar si está completado -->
+                                <input type="checkbox" class="is-done-checkbox" data-item-id="{{ item.id }}" {% if item.is_done %}checked{% endif %}>
+                            </td>
+                            <td>
+                                {% if item.added_by == request.user %}
+                                    <a class="btn btn-warning d-inline" href="{% url 'modify_item' list_id=list.id item_id=item.id %}">Editar</a>
+                                {% endif %}
+                                {% if item.added_by == request.user or list.creator == request.user %}
+                                    <form class="d-inline" action="{% url 'delete_item' list_id=list.id item_id=item.id %}" method="post">
+                                        {% csrf_token %}
+                                        <button class="btn btn-danger">Borrar</button>
+                                    </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
+
+            <!-- Formulario para enviar todos los cambios -->
+            <form id="update-form">
+                <!-- Botón para guardar todos los cambios -->
+                <button type="button" id="save-changes" class="btn btn-primary mx-2">Guardar cambios</button>
+                <button type="button" id="complete-list" class="btn btn-success mx-2">Completar lista</button>
+            </form>
         </div>
 
         
-        <div class="col-md-6 border border-danger bg-light">
+        <div id="admin-panel" class="col-12 col-md-10 col-lg-8 border border-danger bg-light mx-auto" style="display: none;">
             <h2>Panel de Administración</h2>
+            <button class="btn btn-danger" id="close-admin-panel">Close</button>
             
 
             <h4>Gestionar la Lista</h4>
@@ -288,6 +292,17 @@
         }
 
         document.getElementById('manage-tags').addEventListener('click', manageTags);
+
+        // Toggle between items container and admin panel
+        document.getElementById('toggle-admin-panel').addEventListener('click', function () {
+            document.getElementById('items-container').style.display = 'none';
+            document.getElementById('admin-panel').style.display = 'block';
+        });
+
+        document.getElementById('close-admin-panel').addEventListener('click', function () {
+            document.getElementById('admin-panel').style.display = 'none';
+            document.getElementById('items-container').style.display = 'block';
+        });
     });
 </script>
 

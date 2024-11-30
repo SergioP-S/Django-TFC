@@ -1,3 +1,7 @@
+import base64
+import os
+from django.core.files.base import ContentFile
+from django.conf import settings
 from django.db import IntegrityError
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404, render, redirect
@@ -81,16 +85,36 @@ def signin(request):
 
 def user_details(request, username): 
     user = get_object_or_404(User, username=username)
+    profile = get_object_or_404(Profile, user = request.user.id)
     if request.method == 'GET': 
         return render(request, 'user_details.html', {
-            'user_info': user
+            'user_info': user,
+            'profile' : profile
         })
     
 
 def complete_profile(request): 
     if request.method == 'GET':
-            return render(request, 'complete_profile.html', {
+        return render(request, 'complete_profile.html', {
             'form': ProfileForm,
         })
     else:
-        raise Http404
+        form = ProfileForm(request.POST, request.FILES)
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+
+            cropped_image_data = request.POST.get('cropped_image_data')
+            if cropped_image_data:
+                format, imgstr = cropped_image_data.split(';base64,')
+                ext = format.split('/')[-1]
+                data = ContentFile(base64.b64decode(imgstr), name=f'{request.user.id}.{ext}')
+                profile.pic = data
+
+            profile.save()
+            return redirect('home')
+        else:
+            return render(request, 'complete_profile.html', {
+                'form': ProfileForm,
+                'error': 'Error al completar el formulario'
+            })
