@@ -8,10 +8,13 @@
         <br>
         {{user_info.email}}
         <br>
-        <img src="../{{profile.pic}}" alt="User Profile Picture" style="max-width: 100%; height: auto;">
-      
-
-        
+        {% if user_info.profile %}
+            <p>{{ user_info.profile.description }}</p>
+            <img src="../media/{{ user_info.profile.pic }}" alt="User Profile Picture" style="max-width: 100%; height: auto;">
+        {% else %}
+            <p>Aún no has completado tu perfil.</p>
+            <a href="{% url 'complete_profile' %}">Completar perfil</a>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
