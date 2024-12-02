@@ -37,7 +37,12 @@
                                     <p>Vacío</p>
                                 {% endif %}
                             </td>
-                            <td>{{ item.added_by }}</td>
+                            <td>
+                                <a href="{% url 'user_details' item.added_by.username %}" title="{{item.added_by.username}}">
+                                    <img src="../../media/{{ item.added_by.profile.pic }}" class="rounded-circle border" alt="{{item.added_by.username}}" style="width: 40px; height: 40px;">
+                                </a>
+                            </td>
+
                             <td>
                                 <!-- Checkbox para marcar si está completado -->
                                 <input type="checkbox" class="is-done-checkbox" data-item-id="{{ item.id }}" {% if item.is_done %}checked{% endif %}>

@@ -22,7 +22,9 @@ Falta añadir las funcionalidades de:
 
     Menús de Ayuda
      
-    Añadir función que compruebe duplicados, si hay dos registros muy similares. 
+    Añadir función que compruebe duplicados, si hay dos registros muy similares.
+
+    ARREGLAR ERROR AL SUBIR IMAGENES DE MÁS DE 2,5mb, y si se cambia de la foto default a una nueva, se elimina la default.
 
 
     
@@ -32,12 +34,3 @@ POSIBLES FUNCIONALIDADES:
     solo se añadirá valor si el usuario lo desea.
 
     -Añadir Breadcrumb?
-
-
-EXAMS
-
-myexams.html  --> mostrará los examenes de los que se forma parte
-create_exam.html -->Formulario para crear examen
-create_question.html --> Formilario para crear pregunta de un examen
-manage_exam.html --> Panel de administración del examen
-manage_permits.html --> permite establecer roles en los colaboradores de la lista

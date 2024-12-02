@@ -10,14 +10,17 @@
     {% else %}
     <div class="container bg-warning p-2 m-3">
     {% endif %}
-        <h3>
-            {{list.name}}
-        </h3>
-        <p>Colaboradores:</p>
-        {% for collaborator in list.collaborators.all %}
-        <p>{{collaborator.username}}</p>
-        {% endfor %}
-        <a class="btn btn-dark" href="{% url 'list_details' list.id %}">Show more</a>
+        <div class="d-flex justify-content-between align-items-center">
+            <h3>{{list.name}}</h3>
+            <div>
+                {% for collaborator in list.collaborators.all %}
+                <a href="{% url 'user_details' collaborator.username %}" title="{{collaborator.username}}">
+                    <img src="../media/{{ collaborator.profile.pic }}" class="rounded-circle border" alt="{{collaborator.username}}" style="width: 40px; height: 40px;">
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+        <a class="btn btn-dark mt-2" href="{% url 'list_details' list.id %}">Show more</a>
     </div>
     {% endfor %}
 </div>

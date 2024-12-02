@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'tasks',
     'auth_app',
     'lists'
 ]
@@ -107,7 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Custom Backend for auth process
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',  # Default if necessary
+    # 'django.contrib.auth.backends.ModelBackend',  # Default if necessary
     'auth_app.auth.custom_backend.CustomBackend'
 ]
 
