@@ -2,8 +2,9 @@
 
 {% block content %}
 <div class="container col-12 col-md-10 col-lg-8 border p-4 mx-auto mt-4 text-white">
-    <h1 class="text-dark">{{title}}</h1>
+    <h1 class="text-dark">Mis Listas</h1>
     <p class="text-dark">Verde = Creador, Amarilla = Colaborador</p>
+    <p></p>
     {% for list in lists %}
     {% if request.user == list.creator %}
     <div class="container bg-success p-2 m-3">
@@ -20,7 +21,7 @@
                 {% endfor %}
             </div>
         </div>
-        <a class="btn btn-dark mt-2" href="{% url 'list_details' list.id %}">Show more</a>
+        <a class="btn btn-dark mt-2" href="{% url 'list_details' list.id %}">Ver</a>
     </div>
     {% endfor %}
 </div>

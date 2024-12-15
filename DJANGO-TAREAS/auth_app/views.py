@@ -217,12 +217,12 @@ def complete_profile(request):
 def reset_password(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
-            return render(request, 'reset_password.html', {'form': PasswordResetForm()})
+            return render(request, 'reset_password.html', {'form': SetPasswordForm(user=request.user)})
         else:
             return render(request, 'reset_password_email.html', {'form': PasswordResetEmailForm()})
     else:
         if request.user.is_authenticated:
-            form = PasswordResetForm(request.POST)
+            form = SetPasswordForm(user=request.user, data=request.POST)
             if form.is_valid():
                 new_password = form.cleaned_data['new_password1']
                 request.user.set_password(new_password)

@@ -3,10 +3,10 @@
 {% block content%}
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
     <div class="col-12 col-md-9 col-lg-6 border p-4">
-        <h2>Complete User Info</h2>
+        <h2>Modificar Perfil</h2>
         <div class="mt-4">
-            <h4>Current Profile Information</h4>
-            <p><strong>username:</strong> {{ user.username }}</p>
+            <h4>Información actual del perfil</h4>
+            <p><strong>Nombre de usuario:</strong> {{ user.username }}</p>
             <p><strong>Email:</strong> {{ user.email }}</p>
             <div class="d-flex justify-content-center">
                 <div class="rounded-circle overflow-hidden" style="width: 150px; height: 150px;">
@@ -15,13 +15,13 @@
             </div>
         </div>
         <p style="color: red;">{{error}}</p>
-        <button id="toggle-form-btn" class="btn btn-primary mt-3">Completar tu perfil</button>
+        <button id="toggle-form-btn" class="btn btn-primary mt-3">Modificar los detalles</button>
         <div id="profile-form-container" style="display: none;">
             <form action="#" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{form.as_p}}
                 <div>
-                    <label for="id_pic">Profile Picture:</label>
+                    <label for="id_pic">Foto de Perfil</label>
                     <input type="file" id="id_pic" name="pic" accept="image/*" onchange="previewImage(event)">
                     <div id="image-preview-container" class="d-flex justify-content-center mt-3" style="display:none;">
                         <div class="rounded-circle overflow-hidden" style="width: 150px; height: 150px;">
@@ -30,7 +30,7 @@
                     </div>
                 </div>
                 <input type="hidden" id="cropped_image_data" name="cropped_image_data">
-                <button>Completar Perfil</button>
+                <button class="btn btn-success">Guardar Cambios</button>
             </form>
         </div>
         <div class="mt-3">

@@ -6,20 +6,35 @@
             <div class="col-md-6">
                 <div class="card mt-5">
                     <div class="card-body">
-                        <h1 class="card-title text-center">Welcome to Your Task & Shopping List Manager!</h1>
-                        <p class="card-text text-center">Organize your life with our easy-to-use app. Create and manage tasks and shopping lists effortlessly.</p>
+                        <h1 class="card-title text-center">Bienvenido a Listopia</h1>
+                        <p class="card-text text-center">¡Crea listas de lo que quieras!</p>
                         <div class="text-center mt-4">
-                           <a href="{% url 'lists' %}" class="btn btn-primary btn-lg ml-3"><i class="fas fa-shopping-cart"></i> Manage Shopping Lists</a>
+                           <a href="{% url 'create_list' %}" class="btn btn-primary btn-lg ml-3"><i class="fas fa-shopping-cart"></i>Comienza creando una lista</a>
                         </div>
                         <div class="mt-5">
-                            <h2 class="text-center">Public Lists</h2>
-                            <ul class="list-group">
-                                {% for list in public_lists %}
-                                    <li class="list-group-item">
-                                        <a href="{% url 'list_details' list.id %}">{{ list.name }}</a>
-                                    </li>
-                                {% endfor %}
-                            </ul>
+                            <h2 class="text-center">Echa un vistazo a las listas publicadas por otros usuarios</h2>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Título</th>
+                                        <th scope="col">Creador</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for list in public_lists %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'list_details' list.id %}">{{ list.name }}</a>
+                                            </td>
+                                            <td>
+                                                <a href="{% url 'user_details' list.creator.username %}" title="{{list.creator.username}}">
+                                                    <img src="../../media/{{ list.creator.profile.pic }}" class="rounded-circle border" alt="{{list.creator.username}}" style="width: 40px; height: 40px;">
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

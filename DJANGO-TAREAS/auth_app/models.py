@@ -41,6 +41,6 @@ def delete_old_pic(sender, instance, **kwargs):
         except Profile.DoesNotExist:
             return
         else:
-            if old_pic and old_pic != instance.pic:
+            if old_pic and old_pic != instance.pic and old_pic.name != 'profile_pics/default.jpg':
                 if os.path.isfile(old_pic.path):
                     os.remove(old_pic.path)

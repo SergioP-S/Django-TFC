@@ -22,7 +22,7 @@ class ItemStatusForm(ModelForm):
 class ModifyListForm(ModelForm):
     class Meta:
         model = List
-        fields = ['description', 'is_public'] #¿Añadir nombre de la lista, se puede modificar ?
+        fields = ['description', 'is_public']
 
 class ModifyItemForm(ModelForm):
     class Meta:

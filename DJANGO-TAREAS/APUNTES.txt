@@ -1,18 +1,12 @@
 Falta añadir las funcionalidades de:
 
-    Editar lista (nombre, descripcion...) --> HECHO, falta poder cambiar el nombre
-
     Mejorar navegación
 
-    Añadir validaciones, por ejemplo al crear un item, obligar a poner cantidad o peso
+    Añadir validaciones
 
     Al expulsar un usuario de la lista, se pregunta si se desea eliminar o conservar todo lo que este ha añadido
 
-    Implementar verificación en dos pasos, con confirmación de email 
-
     Hacer Web progresiva
-
-    Añadir un campo color a cada item que permita personalizar por colores, este campo color representaría la prioridad o grupo al que pertenece
 
     añadir un campo tipo de lista? o tipo de item?
 
@@ -26,11 +20,12 @@ Falta añadir las funcionalidades de:
 
     ARREGLAR ERROR AL SUBIR IMAGENES DE MÁS DE 2,5mb, y si se cambia de la foto default a una nueva, se elimina la default.
 
+    Añadir función para que el admin pueda editar items de colaboradores
+    Añadir popup cuando cambies la contraseña
+
 
     
 
 POSIBLES FUNCIONALIDADES:
-    -Añadir un máximo de precio por producto, el precio será opcional y el campo estará vacío,
-    solo se añadirá valor si el usuario lo desea.
 
     -Añadir Breadcrumb?
