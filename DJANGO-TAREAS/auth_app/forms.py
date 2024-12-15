@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, SetPasswordForm
 #from .models import CustomUser
 from django.contrib.auth.models import User
 from .models import Profile
@@ -16,3 +16,9 @@ class ProfileForm(forms.ModelForm):
     class Meta():
             model = Profile
             fields = ['description']
+
+class PasswordResetForm(SetPasswordForm):
+    pass
+
+class PasswordResetEmailForm(forms.Form):
+    email = forms.EmailField()

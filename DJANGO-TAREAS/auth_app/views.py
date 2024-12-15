@@ -1,19 +1,26 @@
 import base64
+import random
+import string
+from datetime import datetime, timedelta
+from django.core.mail import send_mail
 from django.core.files.base import ContentFile
 from django.conf import settings
 from django.db import IntegrityError
-from django.shortcuts import render
-from django.shortcuts import get_object_or_404, render, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import Http404, HttpResponse
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from auth_app.forms import *
-from lists.models import List  # Add this import
-from auth_app.models import Profile  # Add this import
+from lists.models import List
+from auth_app.models import Profile
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.template.loader import render_to_string
 
 
 def home(request): 
@@ -54,13 +61,26 @@ def signup(request):
         if request.POST['password1'] ==  request.POST['password2']:
            try: 
                 validate_password(request.POST['password1'])
-                user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'], email=request.POST['email'])
+                user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'], email=request.POST['email'], is_active=False)
                 user.save()
                 # Create a profile for the new user
                 profile = Profile(user=user, description='', pic='profile_pics/default.jpg')
                 profile.save()
-                login(request, user) 
-                return redirect('home')
+                # Generate verification key and expiration date
+                verification_key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
+                expiration_date = datetime.now() + timedelta(days=1)
+                request.session['verification_key'] = verification_key
+                request.session['expiration_date'] = expiration_date.isoformat()
+                request.session['user_id'] = user.id
+                verification_link = request.build_absolute_uri(f"/verify_mail/?key={verification_key}")
+                send_mail(
+                    'Verify your email',
+                    f'Click the link to verify your email: {verification_link}',
+                    settings.EMAIL_HOST_USER,
+                    [user.email],
+                    fail_silently=False,
+                )
+                return redirect('verify_mail')
            except ValidationError as e:
                 return render(request, 'signup.html', {
                     'form': CustomUserCreationForm,
@@ -102,6 +122,8 @@ def signin(request):
                 'form': CustomUserLoginForm,
                 'error': 'Las credenciales son incorrectas'
             })
+        elif not user.is_active:
+            return redirect('verify_mail')
         else:  # If the credentials are correct, start the session and redirect to the tasks view
             login(request, user)
             # Check for pending invitation in session
@@ -110,6 +132,21 @@ def signin(request):
                 return redirect('accept_invitation', list_id=invitation['list_id'], signed_key=invitation['signed_key'])
             return redirect('home')
         
+
+def verify_mail(request):
+    key = request.GET.get('key')
+    if key and key == request.session.get('verification_key'):
+        expiration_date = datetime.fromisoformat(request.session.get('expiration_date'))
+        if datetime.now() < expiration_date:
+            user_id = request.session.get('user_id')
+            user = User.objects.get(id=user_id)
+            user.is_active = True
+            user.save()
+            login(request, user)
+            return redirect('home')
+        else:
+            return render(request, 'verify_mail.html', {'error': 'Verification link has expired'})
+    return render(request, 'verify_mail.html', {'error': 'Invalid verification link'})
 
 
 def user_details(request, username): 
@@ -172,3 +209,61 @@ def complete_profile(request):
                 'form': form,
                 'error': 'Error al completar el formulario'
             })
+
+def reset_password(request):
+    if request.method == 'GET':
+        if request.user.is_authenticated:
+            return render(request, 'reset_password.html', {'form': PasswordResetForm(request.user)})
+        else:
+            return render(request, 'reset_password_email.html', {'form': PasswordResetEmailForm()})
+    else:
+        if request.user.is_authenticated:
+            form = PasswordResetForm(request.user, request.POST)
+            if form.is_valid():
+                new_password = form.cleaned_data['new_password1']
+                request.user.set_password(new_password)
+                request.user.save()
+                return redirect('signin')
+            else:
+                return render(request, 'reset_password.html', {'form': form})
+        else:
+            form = PasswordResetEmailForm(request.POST)
+            if form.is_valid():
+                email = form.cleaned_data['email']
+                user = get_object_or_404(User, email=email)
+                token = default_token_generator.make_token(user)
+                uid = urlsafe_base64_encode(force_bytes(user.pk))
+                reset_link = request.build_absolute_uri(f"/reset_password_confirm/{uid}/{token}/")
+                send_mail(
+                    'Password Reset',
+                    f'Click the link to reset your password: {reset_link}',
+                    settings.EMAIL_HOST_USER,
+                    [user.email],
+                    fail_silently=False,
+                )
+                return render(request, 'reset_password_email.html', {'form': form, 'message': 'Email sent'})
+            else:
+                return render(request, 'reset_password_email.html', {'form': form})
+
+def reset_password_confirm(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            form = PasswordResetForm(user, request.POST)
+            if form.is_valid():
+                new_password = form.cleaned_data['new_password1']
+                user.set_password(new_password)
+                user.save()
+                return redirect('signin')
+            else:
+                return render(request, 'reset_password_confirm.html', {'form': form})
+        else:
+            form = PasswordResetForm(user)
+            return render(request, 'reset_password_confirm.html', {'form': form})
+    else:
+        return render(request, 'reset_password_confirm.html', {'error': 'Invalid link'})

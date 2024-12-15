@@ -26,8 +26,9 @@ SECRET_KEY = 'django-insecure-q0!0rmtuj74o#=tfx+hc&50e(c)@$b9xm4kvsl^-de80*+r#k&
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'django-tfc.onrender.com'
-
+    # 'django-tfc.onrender.com',
+    'localhost',
+    '127.0.0.1'
 ]
 
 
@@ -41,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'auth_app',
-    'lists'
+    'lists',
+    'django.core.mail',
 ]
 
 MIDDLEWARE = [
@@ -138,4 +140,11 @@ LOGIN_URL = '/signin'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = BASE_DIR / 'media/'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'noreply.listopia@gmail.com'
+EMAIL_HOST_PASSWORD = 'qdyp tyof hdvc yhkt'
