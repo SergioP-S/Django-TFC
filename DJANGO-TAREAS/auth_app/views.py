@@ -149,16 +149,20 @@ def verify_mail(request):
     return render(request, 'verify_mail.html', {'error': 'Invalid verification link'})
 
 
+@login_required
 def user_details(request, username): 
     user = get_object_or_404(User, username=username)
     try:
         profile = Profile.objects.get(user=user)
     except Profile.DoesNotExist:
         raise Http404("Profile does not exist")
+    lists = List.objects.filter(creator=user, is_public=True)
+    print(lists)
     if request.method == 'GET': 
         return render(request, 'user_details.html', {
             'user_info': user,
-            'profile' : profile
+            'profile': profile,
+            'lists': lists
         })
     
 
@@ -213,12 +217,12 @@ def complete_profile(request):
 def reset_password(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
-            return render(request, 'reset_password.html', {'form': PasswordResetForm(request.user)})
+            return render(request, 'reset_password.html', {'form': PasswordResetForm()})
         else:
             return render(request, 'reset_password_email.html', {'form': PasswordResetEmailForm()})
     else:
         if request.user.is_authenticated:
-            form = PasswordResetForm(request.user, request.POST)
+            form = PasswordResetForm(request.POST)
             if form.is_valid():
                 new_password = form.cleaned_data['new_password1']
                 request.user.set_password(new_password)

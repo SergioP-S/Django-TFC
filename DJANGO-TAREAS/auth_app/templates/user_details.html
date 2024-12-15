@@ -1,20 +1,31 @@
 {% extends 'base_auth.html' %} <!--Para usar el template llamado base.html-->
 
 {% block content%}
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-    <div class="col-12 col-md-9 col-lg-6 border p-4">
-        <h2>User details</h2>
-        {{user_info.username}}
-        <br>
-        {{user_info.email}}
-        <br>
-        {% if user_info.profile %}
-            <p>{{ user_info.profile.description }}</p>
+<div class="container" style="min-height: 70vh;">
+    <div class="row">
+        <div class="col-12 col-md-4 border p-4">
+            <h2>{{ user_info.username }}</h2>
             <img src="../media/{{ user_info.profile.pic }}" alt="User Profile Picture" style="max-width: 100%; height: auto;">
-        {% else %}
-            <p>Aún no has completado tu perfil.</p>
-            <a href="{% url 'complete_profile' %}">Completar perfil</a>
-        {% endif %}
+            <p>{{ user_info.email }}</p>
+            {% if user_info.profile %}
+                <p>{{ user_info.profile.description }}</p>
+            {% else %}
+                <p>Aún no has completado tu perfil.</p>
+                <a href="{% url 'complete_profile' %}">Completar perfil</a>
+            {% endif %}
+        </div>
+        <div class="col-12 col-md-8 border p-4">
+            <h3>Listas creadas por {{ user_info.username }}</h3>
+            {% if lists %}
+                <ul>
+                    {% for list in lists %}
+                        <li><a href="{% url 'list_details' list.id %}">{{ list.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Este usuario aún no ha publicado nada.</p>
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}

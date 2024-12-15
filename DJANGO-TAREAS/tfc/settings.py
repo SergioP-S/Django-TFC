@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-q0!0rmtuj74o#=tfx+hc&50e(c)@$b9xm4kvsl^-de80*+r#k&
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    # 'django-tfc.onrender.com',
+    'django-tfc.onrender.com',
     'localhost',
     '127.0.0.1'
 ]
