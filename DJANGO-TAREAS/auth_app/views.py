@@ -11,6 +11,9 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from auth_app.forms import *
 from lists.models import List  # Add this import
+from auth_app.models import Profile  # Add this import
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 
 
 def home(request): 
@@ -50,10 +53,19 @@ def signup(request):
     else: 
         if request.POST['password1'] ==  request.POST['password2']:
            try: 
+                validate_password(request.POST['password1'])
                 user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'], email=request.POST['email'])
                 user.save()
+                # Create a profile for the new user
+                profile = Profile(user=user, description='', pic='profile_pics/default.jpg')
+                profile.save()
                 login(request, user) 
-                return redirect('tasks')
+                return redirect('home')
+           except ValidationError as e:
+                return render(request, 'signup.html', {
+                    'form': CustomUserCreationForm,
+                    "error": e.messages
+                })
            except IntegrityError: 
                 return render(request, 'signup.html', {
                     'form': CustomUserCreationForm,
@@ -102,7 +114,10 @@ def signin(request):
 
 def user_details(request, username): 
     user = get_object_or_404(User, username=username)
-    profile = get_object_or_404(Profile, user = request.user.id)
+    try:
+        profile = Profile.objects.get(user=user)
+    except Profile.DoesNotExist:
+        raise Http404("Profile does not exist")
     if request.method == 'GET': 
         return render(request, 'user_details.html', {
             'user_info': user,
