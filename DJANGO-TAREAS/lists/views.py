@@ -46,16 +46,19 @@ def list_details(request, list_id):
         Http404: If the list with the given ID does not exist or the user does not have permission to view it.
     """
     
-
-    list = get_object_or_404(List.objects.filter(Q(creator=request.user) | Q(collaborators=request.user)).distinct(),pk=list_id)
-    items = Item.objects.filter(list=list_id).order_by('added_on')
-    tags = Tag.objects.filter(list=list_id)
-    return render(request, 'list_details.html',{
-        'title': "Detalles de la lista",
-        'list': list,
-        'items': items,
-        'tags': tags
-    })
+    list = get_object_or_404(List, pk=list_id)
+    
+    if list.is_public or request.user == list.creator or request.user in list.collaborators.all():
+        items = Item.objects.filter(list=list_id).order_by('added_on')
+        tags = Tag.objects.filter(list=list_id)
+        return render(request, 'list_details.html', {
+            'title': "Detalles de la lista",
+            'list': list,
+            'items': items,
+            'tags': tags
+        })
+    else:
+        raise Http404
 
 @login_required
 def create_list(request): 

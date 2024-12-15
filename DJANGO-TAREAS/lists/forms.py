@@ -6,7 +6,7 @@ from .models import List, Item, Tag
 class ListForm(ModelForm):
     class Meta: 
         model = List #modelo where fields are obtained
-        fields = ['name', 'description'] #fields shown in the form
+        fields = ['name', 'description', 'is_public'] #fields shown in the form
 
 class NewItemForm(ModelForm):
     class Meta: 
@@ -22,7 +22,7 @@ class ItemStatusForm(ModelForm):
 class ModifyListForm(ModelForm):
     class Meta:
         model = List
-        fields = ['name', 'description'] #¿Añadir nombre de la lista, se puede modificar ?
+        fields = ['description', 'is_public'] #¿Añadir nombre de la lista, se puede modificar ?
 
 class ModifyItemForm(ModelForm):
     class Meta:

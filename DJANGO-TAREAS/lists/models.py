@@ -23,6 +23,7 @@ class List(models.Model):
     collaborators = models.ManyToManyField(User, related_name="collaborated_lists", blank=True)
     last_modified = models.DateTimeField(auto_now=True)
     modified_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
+    is_public = models.BooleanField(default=False)
     
 
     def __str__(self): #método para mostrar el título cuando se quiera mostrar un registro, por ejemplo en el panel admin

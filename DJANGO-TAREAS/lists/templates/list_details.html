@@ -8,13 +8,17 @@
             <h2>{{ list.name }}</h2>
             <p>Creada en: {{ list.created_on }} por {{list.creator}}</p>
             <p><b>Tags:</b> 
+                {% if request.user == list.creator or request.user in list.collaborators.all %}
                 <a class="btn btn-warning d-inline" href="{% url 'add_tag' list_id=list.id %}">+ Tag</a>
+                {% endif %}
                 {% for tag in tags %}
                     <p>{{ tag.name }}, {{ tag.color }}</p>
                 {% endfor %}
             </p>
+            {% if request.user == list.creator or request.user in list.collaborators.all %}
             <a class="btn btn-warning" href="{% url 'add_item' list.id %}">Add Item</a>
             <button class="btn btn-primary" id="toggle-admin-panel">Mostrar Panel de Administración</button>
+            {% endif %}
             
             <table class="table my-2">
                 <thead>
@@ -63,12 +67,14 @@
                 </tbody>
             </table>
 
+            {% if request.user == list.creator or request.user in list.collaborators.all %}
             <!-- Formulario para enviar todos los cambios -->
             <form id="update-form">
                 <!-- Botón para guardar todos los cambios -->
                 <button type="button" id="save-changes" class="btn btn-primary mx-2">Guardar cambios</button>
                 <button type="button" id="complete-list" class="btn btn-success mx-2">Completar lista</button>
             </form>
+            {% endif %}
         </div>
 
         

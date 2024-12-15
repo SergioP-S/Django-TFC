@@ -10,6 +10,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from auth_app.forms import *
+from lists.models import List  # Add this import
 
 
 def home(request): 
@@ -20,8 +21,10 @@ def home(request):
     Returns:
         HttpResponse: The rendered home page.
     """
-
-    return render(request, 'home.html')
+    public_lists = List.objects.filter(is_public=True)  # Fetch public lists
+    return render(request, 'home.html', {
+        'public_lists': public_lists  # Pass public lists to the template
+    })
 
 
 
