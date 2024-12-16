@@ -1,6 +1,19 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 
+
+@receiver(pre_delete, sender=User)
+def remove_user_from_collaborators(sender, instance, **kwargs):
+    """
+    Remove the user from all collaborators before the user is deleted.
+    """
+    # Remove the user from the collaborators of any lists
+    lists_with_collaborator = List.objects.filter(collaborators=instance)
+    for list in lists_with_collaborator:
+        list.collaborators.remove(instance)
+        print(f"Removed {instance.username} from collaborators of list {list.name}")
 
 class List(models.Model):
     """
@@ -21,12 +34,10 @@ class List(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_lists")
     created_on = models.DateTimeField(auto_now_add=True)
     collaborators = models.ManyToManyField(User, related_name="collaborated_lists", blank=True)
-    last_modified = models.DateTimeField(auto_now=True)
-    modified_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
     is_public = models.BooleanField(default=False)
     
 
-    def __str__(self): #método para mostrar el título cuando se quiera mostrar un registro, por ejemplo en el panel admin
+    def __str__(self): 
         return self.name + ' - de ' + self.creator.username
 
 class Item(models.Model):
@@ -36,11 +47,8 @@ class Item(models.Model):
     name = models.CharField(max_length=40)
     description = models.CharField(max_length=256)
     added_on = models.DateTimeField(auto_now_add=True)
-    is_done = models.BooleanField(null=False, default=False)
-    last_modified = models.DateTimeField(auto_now=True)
-    modified_by = models.ForeignKey(User, on_delete=models.CASCADE, blank=True, null=True)
 
-    def __str__(self): #método para mostrar el título cuando se quiera mostrar un registro, por ejemplo en el panel admin
+    def __str__(self): #method to display the title when a record is shown, for example in the admin panel
         return self.name + ' - added by ' + self.added_by.username
     
 class Tag(models.Model):

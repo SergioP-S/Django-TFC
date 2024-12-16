@@ -152,41 +152,6 @@ def delete_item(request, item_id, list_id):
     else :
         return 404
 
-@login_required    
-@csrf_exempt
-def update_items(request):
-    """
-    Handle the update of items' status via an AJAX POST request.
-    This view function processes a POST request containing JSON data with item IDs and their corresponding 
-    'is_done' status. It updates the status of each item in the database.
-    Args:
-        request (HttpRequest): The HTTP request object containing the POST data.
-    Returns:
-        JsonResponse: A JSON response indicating the success or failure of the update operation.
-            - {'success': True} if all items were successfully updated.
-            - {'success': False, 'error': 'Item con id {item_id} no encontrado'} if an item with the given ID does not exist.
-            - {'success': False, 'error': 'Datos inválidos'} if the JSON data is invalid.
-            - {'success': False, 'error': 'Método no permitido'} if the request method is not POST.
-    """
-   
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)  #Obtains data from AJAX request
-
-            #Gets all items from the JSON
-            for item_id, is_done in data.items():
-                try:
-                    item = Item.objects.get(id=item_id)  #Search by the item id
-                    item.is_done = is_done  #Updates the is_done status
-                    item.save()  #Save changes
-                except Item.DoesNotExist:
-                    return JsonResponse({'success': False, 'error': f'Item con id {item_id} no encontrado'})
-            return JsonResponse({'success': True})
-        except json.JSONDecodeError:
-            return JsonResponse({'success': False, 'error': 'Datos inválidos'})
-    else:
-        return JsonResponse({'success': False, 'error': 'Método no permitido'})
-
 @login_required
 def empty_list(request, list_id):
     """

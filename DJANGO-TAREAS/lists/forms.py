@@ -13,12 +13,6 @@ class NewItemForm(ModelForm):
         model = Item
         fields = ['name', 'description']
 
-#Form to set an item as done
-class ItemStatusForm(ModelForm):
-    class Meta:
-        model = Item
-        fields = ['is_done']
-
 class ModifyListForm(ModelForm):
     class Meta:
         model = List
