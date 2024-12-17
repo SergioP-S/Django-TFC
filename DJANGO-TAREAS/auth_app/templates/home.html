@@ -1,4 +1,4 @@
-{% extends 'base_auth.html' %}
+{% extends 'base.html' %}
 {% load static %}
 {% block content %}
     <div class="container-fluid h-100">
@@ -20,25 +20,50 @@
                                         <th scope="col">Creador</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    {% for list in public_lists %}
-                                        <tr>
-                                            <td>
-                                                <a href="{% url 'list_details' list.id %}">{{ list.name }}</a>
-                                            </td>
-                                            <td>
-                                                <a href="{% url 'user_details' list.creator.username %}" title="{{list.creator.username}}">
-                                                    <img src="../../media/{{ list.creator.profile.pic }}" class="rounded-circle border" alt="{{list.creator.username}}" style="width: 40px; height: 40px;">
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
+                                <tbody id="public-lists">
+                                    <!-- Lists will be loaded here via AJAX -->
                                 </tbody>
                             </table>
+                            <div class="text-center">
+                                <button id="load-more" class="btn btn-secondary">Cargar más</button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <script>
+        let offset = 0;
+        const limit = 10;
+
+        function loadLists() {
+            fetch(`/load_lists/?offset=${offset}&limit=${limit}`)
+                .then(response => response.json())
+                .then(data => {
+                    const listsContainer = document.getElementById('public-lists');
+                    data.lists.forEach(list => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td><a href="/list_details/${list.id}">${list.name}</a></td>
+                            <td>
+                                <a href="/user_details/${list.creator.username}" title="${list.creator.username}">
+                                    <img src="../${list.creator.profile.pic}" class="rounded-circle border" alt="${list.creator.username}" style="width: 40px; height: 40px;">
+                                </a>
+                            </td>
+                        `;
+                        listsContainer.appendChild(row);
+                    });
+                    offset += limit;
+                    if (!data.has_more) {
+                        document.getElementById('load-more').style.display = 'none';
+                    }
+                });
+        }
+
+        document.getElementById('load-more').addEventListener('click', loadLists);
+
+        // Initial load
+        loadLists();
+    </script>
 {% endblock %}

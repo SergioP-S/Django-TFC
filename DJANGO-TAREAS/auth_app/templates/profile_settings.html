@@ -1,4 +1,4 @@
-{% extends 'base_auth.html' %} <!--Para usar el template llamado base.html-->
+{% extends 'base.html' %} <!--Para usar el template llamado base.html-->
 
 {% block content%}
 <div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
@@ -35,6 +35,18 @@
         </div>
         <div class="mt-3">
             <p>¿Quieres cambiar tu contraseña? <a href="{% url 'reset_password' %}">Hazlo aquí</a></p>
+        </div>
+        <div class="mt-3">
+            <h4>Eliminar cuenta</h4>
+            <form action="{% url 'delete_user' %}" method="post">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="password">Introduce tu contraseña para eliminar la cuenta:</label>
+                    <input type="password" name="password" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-danger mt-2">Eliminar cuenta</button>
+                <p style="color: red;">{{delete_error}}</p>
+            </form>
         </div>
     </div>
 </div>

@@ -26,11 +26,23 @@ def lists(request):
     Returns:
         HttpResponse: The rendered 'lists.html' template with the context containing the title and the lists.
     """
+    search_query = request.GET.get('search', '')
+    filter_type = request.GET.get('filter', 'both')
 
-    lists = List.objects.filter(Q(creator=request.user) | Q(collaborators=request.user)).order_by('created_on').distinct()
-    return render(request, 'lists.html',{
+    if filter_type == 'creator':
+        lists = List.objects.filter(creator=request.user, name__icontains=search_query).order_by('created_on').distinct()
+    elif filter_type == 'collaborator':
+        lists = List.objects.filter(collaborators=request.user, name__icontains=search_query).order_by('created_on').distinct()
+    else:
+        lists = List.objects.filter(
+            (Q(creator=request.user) | Q(collaborators=request.user)) & Q(name__icontains=search_query)
+        ).order_by('created_on').distinct()
+
+    return render(request, 'lists.html', {
         'title': 'Lists',
-        'lists': lists
+        'lists': lists,
+        'search_query': search_query,
+        'filter_type': filter_type
     })
 
 @login_required

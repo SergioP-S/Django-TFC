@@ -7,7 +7,7 @@ from django.core.files.base import ContentFile
 from django.conf import settings
 from django.db import IntegrityError
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
@@ -21,6 +21,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
+from django.contrib.auth.forms import PasswordChangeForm
 
 
 def home(request): 
@@ -31,11 +32,32 @@ def home(request):
     Returns:
         HttpResponse: The rendered home page.
     """
-    public_lists = List.objects.filter(is_public=True)  # Fetch public lists
-    return render(request, 'home.html', {
-        'public_lists': public_lists  # Pass public lists to the template
-    })
+    return render(request, 'home.html')
 
+
+def load_lists(request):
+    """
+    Handles AJAX requests to load lists in batches.
+    Args:
+        request (HttpRequest): The HTTP request object.
+    Returns:
+        JsonResponse: A JSON response containing the lists and a flag indicating if there are more lists to load.
+    """
+    offset = int(request.GET.get('offset', 0))
+    limit = int(request.GET.get('limit', 10))
+    public_lists = List.objects.filter(is_public=True)[offset:offset+limit]
+    lists_data = [{
+        'id': list.id,
+        'name': list.name,
+        'creator': {
+            'username': list.creator.username,
+            'profile': {
+                'pic': list.creator.profile.pic.url if list.creator.profile.pic else 'profile_pics/default.jpg'
+            }
+        }
+    } for list in public_lists]
+    has_more = List.objects.filter(is_public=True).count() > offset + limit
+    return JsonResponse({'lists': lists_data, 'has_more': has_more})
 
 
 def signup(request):
@@ -165,27 +187,14 @@ def user_details(request, username):
             'lists': lists
         })
     
-
-def complete_profile(request):
-    """
-    Handle the completion of a user's profile.
-    This view handles both GET and POST requests. For GET requests, it renders a form for the user to complete their profile.
-    For POST requests, it processes the submitted form data, validates it, and updates the user's profile accordingly.
-    Args:
-        request (HttpRequest): The HTTP request object.
-    Returns:
-        HttpResponse: The HTTP response object. For GET requests, it returns a rendered template with the profile form.
-                      For valid POST requests, it redirects to the 'home' page. For invalid POST requests, it returns
-                      a rendered template with the profile form and an error message.
-    """
-     
+def profile_settings(request):
     if request.method == 'GET':
         if hasattr(request.user, 'profile'):
             profile = get_object_or_404(Profile, user=request.user)
             form = ProfileForm(instance=profile)
         else:
             form = ProfileForm()
-        return render(request, 'complete_profile.html', {
+        return render(request, 'profile_settings.html', {
             'form': form,
         })
     else:
@@ -209,10 +218,24 @@ def complete_profile(request):
             profile.save()
             return redirect('home')
         else:
-            return render(request, 'complete_profile.html', {
+            return render(request, 'profile_settings.html', {
                 'form': form,
                 'error': 'Error al completar el formulario'
             })
+
+@login_required
+def delete_user(request):
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        if request.user.check_password(password):
+            request.user.delete()
+            return redirect('home')
+        else:
+            return render(request, 'profile_settings.html', {
+                'form': ProfileForm(instance=request.user.profile),
+                'delete_error': 'Incorrect password'
+            })
+    return redirect('profile_settings')
 
 def reset_password(request):
     if request.method == 'GET':
