@@ -4,12 +4,12 @@
     <title>Verify Email</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
 </head>
-<body>
-    <div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-        <div class="col-12 col-md-6 col-lg-6 border p-4">
-            <h1>Por favor, verifique su correo electrónico</h1>
-            <p>Compruebe su bandeja de entrada para activar su cuenta.</p>
-            <a class="btn btn-primary" href="{% url 'home' %}">Volver</a>
+<body class="bg-slate-50" style='font-family: "Work Sans", "Noto Sans", sans-serif;'>
+    <div class="container mx-auto py-10 flex justify-center items-center min-h-screen">
+        <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-md">
+            <h1 class="text-[#0e141b] text-2xl font-bold mb-4">Por favor, verifique su correo electrónico</h1>
+            <p class="text-[#4e7397] mb-4">Compruebe su bandeja de entrada para activar su cuenta.</p>
+            <a class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg w-full text-center" href="{% url 'home' %}">Volver</a>
         </div>
     </div>
 </body>

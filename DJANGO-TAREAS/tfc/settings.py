@@ -148,3 +148,4 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'noreply.listopia@gmail.com'
 EMAIL_HOST_PASSWORD = 'qdyp tyof hdvc yhkt'
+DATA_UPLOAD_MAX_MEMORY_SIZE = None

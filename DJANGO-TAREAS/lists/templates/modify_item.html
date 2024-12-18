@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-    <div class="col-12 col-md-9 col-lg-6 border p-4">
-        <h1>Actualizar Item</h1>
-        <p>Modifica un item existente.</p>
+<div class="container mx-auto py-10 flex justify-center items-center min-h-screen">
+    <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-lg">
+        <h1 class="text-[#0e141b] text-2xl font-bold mb-4">Actualizar Item</h1>
+        <p class="text-[#4e7397] mb-4">Modifica un item existente.</p>
         <form action="{% url 'modify_item' list_id=list.id item_id=item.id %}" method="post">
             {% csrf_token %}
-            <p class="text text-danger">{{error}}</p>
+            <p class="text-red-600 mb-4">{{error}}</p>
             {{form.as_p}}
-            <button class="btn btn-primary mt-3">Submit</button>
+            <button class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg w-full mt-4">Submit</button>
         </form>
     </div>
 </div>

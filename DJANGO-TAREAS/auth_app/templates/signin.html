@@ -1,19 +1,19 @@
 {% extends 'base.html' %} <!--Para usar el template llamado base.html-->
 
-{% block content%}
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-    <div class="col-12 col-md-6 col-lg-4 border p-4">
-        <h2>Log in</h2>
-        <p>Inicia sesion colega</p>
-        <p style="color: red;">{{error}}</p>
+{% block content %}
+<div class="container mx-auto py-10 flex justify-center items-center min-h-screen">
+    <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-md">
+        <h2 class="text-[#0e141b] text-2xl font-bold mb-4">Log in</h2>
+        <p class="text-[#4e7397] mb-4">Inicia sesión colega</p>
+        <p class="text-red-600 mb-4">{{error}}</p>
         <form action="/signin/" method="post">
             {% csrf_token %}
             {{form.as_p}}
-            <button class="btn btn-primary btn-block">Sign In</button>
+            <button class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg w-full">Sign In</button>
         </form>
-        <div class="mt-3">
-            <p>¿No tienes cuenta? Registrate <a href="{% url 'signup' %}">aquí</a></p>
-            <p>¿Olvidaste tu contraseña? <a href="{% url 'reset_password' %}">Recupérala aquí</a></p>
+        <div class="mt-4 text-center">
+            <p class="text-[#0e141b]">¿No tienes cuenta? <a href="{% url 'signup' %}" class="text-[#1980e6]">Regístrate aquí</a></p>
+            <p class="text-[#0e141b]">¿Olvidaste tu contraseña? <a href="{% url 'reset_password' %}" class="text-[#1980e6]">Recupérala aquí</a></p>
         </div>
     </div>
 </div>

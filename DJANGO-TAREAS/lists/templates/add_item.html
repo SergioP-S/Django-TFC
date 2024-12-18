@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-    <div class="col-12 col-md-9 col-lg-6 border p-4">
-        <h1>Añadir Item</h1>
-        <p>Rellene el formulario para agregar un nuevo item a la lista.</p>
+<div class="container mx-auto py-10 flex justify-center items-center min-h-screen">
+    <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-lg">
+        <h1 class="text-[#0e141b] text-2xl font-bold mb-4">Añadir Item</h1>
+        <p class="text-[#4e7397] mb-4">Rellene el formulario para agregar un nuevo item a la lista.</p>
         <form action="/lists/{{list_id}}/add_item/" method="post">
             {% csrf_token %}
             {{form.as_p}}
-            <button class="btn btn-primary mt-3">Submit</button>
+            <button class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg w-full mt-4">Submit</button>
         </form>
     </div>
 </div>

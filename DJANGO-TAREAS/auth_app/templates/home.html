@@ -1,36 +1,18 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-    <div class="container-fluid h-100">
-        <div class="row h-100 align-items-center justify-content-center">
-            <div class="col-md-6">
-                <div class="card mt-5">
-                    <div class="card-body">
-                        <h1 class="card-title text-center">Bienvenido a Listopia, {{user}}</h1>
-                        <p class="card-text text-center">¡Crea listas de lo que quieras!</p>
-                        <div class="text-center mt-4">
-                           <a href="{% url 'create_list' %}" class="btn btn-primary btn-lg ml-3"><i class="fas fa-shopping-cart"></i>Comienza creando una lista</a>
-                        </div>
-                        <div class="mt-5">
-                            <h2 class="text-center">Echa un vistazo a las listas publicadas por otros usuarios</h2>
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th scope="col">Título</th>
-                                        <th scope="col">Creador</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="public-lists">
-                                    <!-- Lists will be loaded here via AJAX -->
-                                </tbody>
-                            </table>
-                            <div class="text-center">
-                                <button id="load-more" class="btn btn-secondary">Cargar más</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <div class="container mx-auto py-10">
+        <div class="bg-cover bg-center bg-no-repeat rounded-xl p-10" style='background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%), url("https://cdn.usegalileo.ai/sdxl10/c2db0b58-24e4-471c-8076-fe46520bbb4c.png");'>
+            <h1 class="text-white text-4xl font-black mb-4">Bienvenido a Listopia, {{user}}</h1>
+            <p class="text-white text-lg mb-6">¡Crea listas de lo que quieras!</p>
+            <a href="{% url 'create_list' %}" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">Comienza creando una lista</a>
+        </div>
+        <h2 class="text-[#0e141b] text-2xl font-bold mt-10 mb-4">Echa un vistazo a las listas publicadas por otros usuarios</h2>
+        <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="public-lists">
+            <!-- Lists will be loaded here via AJAX -->
+        </ul>
+        <div class="text-center mt-6">
+            <button id="load-more" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Cargar más</button>
         </div>
     </div>
     <script>
@@ -43,16 +25,21 @@
                 .then(data => {
                     const listsContainer = document.getElementById('public-lists');
                     data.lists.forEach(list => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td><a href="/list_details/${list.id}">${list.name}</a></td>
-                            <td>
-                                <a href="/user_details/${list.creator.username}" title="${list.creator.username}">
-                                    <img src="../${list.creator.profile.pic}" class="rounded-circle border" alt="${list.creator.username}" style="width: 40px; height: 40px;">
-                                </a>
-                            </td>
+                        const listItem = document.createElement('li');
+                        listItem.className = "bg-white rounded-lg shadow-md p-4 flex items-center space-x-4";
+                        listItem.innerHTML = `
+                            <a href="/user_details/${list.creator.username}">
+                                <img src="../${list.creator.profile.pic}" alt="${list.creator.username}" class="w-12 h-12 rounded-full">
+                            </a>
+                            <div class="flex-grow">
+                                <h5 class="text-lg font-bold">${list.name}</h5>
+                                <p class="text-gray-600">Creado por ${list.creator.username}</p>
+                            </div>
                         `;
-                        listsContainer.appendChild(row);
+                        listItem.addEventListener('click', () => {
+                            window.location.href = `/lists/${list.id}`;
+                        });
+                        listsContainer.appendChild(listItem);
                     });
                     offset += limit;
                     if (!data.has_more) {

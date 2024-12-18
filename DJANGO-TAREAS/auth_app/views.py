@@ -179,7 +179,6 @@ def user_details(request, username):
     except Profile.DoesNotExist:
         raise Http404("Profile does not exist")
     lists = List.objects.filter(creator=user, is_public=True)
-    print(lists)
     if request.method == 'GET': 
         return render(request, 'user_details.html', {
             'user_info': user,

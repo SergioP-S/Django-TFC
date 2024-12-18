@@ -69,6 +69,25 @@
         const input = event.target;
 
         if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const validExtensions = ['image/jpeg', 'image/jpg', 'image/png'];
+            if (!validExtensions.includes(file.type)) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Formato de imagen no válido',
+                    text: 'Solo se permiten archivos .jpg, .jpeg y .png',
+                });
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {  // 5 MB
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'La Imagen es muy grande',
+                    text: 'El tamaño máximo permitido es de 5 MB',
+                });
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 Swal.fire({

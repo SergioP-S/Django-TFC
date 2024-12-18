@@ -1,51 +1,43 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container col-12 col-md-10 col-lg-8 border p-4 mx-auto mt-4 text-white">
-    <h1 class="text-dark">Mis Listas</h1>
-    <p class="text-dark">Verde = Creador, Amarilla = Colaborador</p>
-    <form method="GET" action="{% url 'lists' %}">
-        <input type="text" name="search" placeholder="Buscar listas..." value="{{ search_query }}">
-        <select name="filter">
-            <option value="both" {% if filter_type == 'both' %}selected{% endif %}>Ambas</option>
-            <option value="creator" {% if filter_type == 'creator' %}selected{% endif %}>Creador</option>
-            <option value="collaborator" {% if filter_type == 'collaborator' %}selected{% endif %}>Colaborador</option>
-        </select>
-        <button type="submit" class="btn btn-primary">Buscar</button>
-        <a href="{% url 'lists' %}" class="btn btn-secondary">Clear</a>
+<div class="container mx-auto py-10">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-[#0e141b] text-2xl font-bold">Mis Listas</h1>
+        <a href="{% url 'create_list' %}" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">Nueva Lista</a>
+    </div>
+    <form method="GET" action="{% url 'lists' %}" class="mb-6">
+        <div class="flex items-center space-x-4">
+            <input type="text" name="search" placeholder="Buscar listas..." value="{{ search_query }}" class="form-input flex-grow bg-[#e7edf3] text-[#0e141b] placeholder-[#4e7397] rounded-xl px-4 py-2">
+            <select name="filter" class="form-select bg-[#e7edf3] text-[#0e141b] rounded-xl px-4 py-2">
+                <option value="both" {% if filter_type == 'both' %}selected{% endif %}>Ambas</option>
+                <option value="creator" {% if filter_type == 'creator' %}selected{% endif %}>Creador</option>
+                <option value="collaborator" {% if filter_type == 'collaborator' %}selected{% endif %}>Colaborador</option>
+            </select>
+            <button type="submit" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">Buscar</button>
+            <a href="{% url 'lists' %}" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Clear</a>
+        </div>
     </form>
-    <p></p>
     {% if lists %}
-        {% for list in lists %}
-        {% if request.user == list.creator %}
-        <div class="container bg-success p-2 m-3 list-item" onclick="location.href='{% url 'list_details' list.id %}'">
-        {% else %}
-        <div class="container bg-warning p-2 m-3 list-item" onclick="location.href='{% url 'list_details' list.id %}'">
-        {% endif %}
-            <div class="d-flex justify-content-between align-items-center">
-                <h3>{{list.name}}</h3>
-                <div>
+        <div class="space-y-4">
+            {% for list in lists %}
+            <div class="{% if request.user == list.creator %}bg-gradient-to-r from-green-400 to-green-500{% else %}bg-gradient-to-r from-yellow-400 to-yellow-500{% endif %} rounded-lg shadow-md p-4 flex items-center space-x-4 cursor-pointer transform transition-transform hover:scale-105" onclick="location.href='{% url 'list_details' list.id %}'">
+                <div class="flex-grow">
+                    <h3 class="text-lg font-bold text-white">{{list.name}}</h3>
+                    <p class="text-white">Creado por {{list.creator.username}}</p>
+                </div>
+                <div class="flex space-x-2">
                     {% for collaborator in list.collaborators.all %}
                     <a href="{% url 'user_details' collaborator.username %}" title="{{collaborator.username}}">
-                        <img src="../media/{{ collaborator.profile.pic }}" class="rounded-circle border" alt="{{collaborator.username}}" style="width: 40px; height: 40px;">
+                        <img src="../media/{{ collaborator.profile.pic }}" class="rounded-full w-10 h-10" alt="{{collaborator.username}}">
                     </a>
                     {% endfor %}
                 </div>
             </div>
+            {% endfor %}
         </div>
-        {% endfor %}
     {% else %}
-        <p class="text-dark">No se encontraron listas con el término buscado.</p>
+        <p class="text-[#0e141b]">No se encontraron listas con el término buscado.</p>
     {% endif %}
 </div>
-
-<style>
-    .list-item {
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-    .list-item:hover {
-        transform: scale(1.02);
-    }
-</style>
 {% endblock %}

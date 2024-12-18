@@ -1,39 +1,43 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-    <div class="col-12 col-md-9 col-lg-6 border p-4">
-        <h1>Share List, add collaborators</h1>
-        <p>Invitación para la lista : {{list.id}}--{{list.name}}</p>
-        <hr>
-        <p>Comparte este enlace con la persona que quieras invitar</p>
-        <div class="border border-2 border-primary" style="overflow-x: auto; white-space: nowrap;">
-            <p class="px-2">{{share_url}}</p>
+<div class="min-h-screen bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+        <div class="p-8">
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">Share List</h1>
+            <p class="text-gray-600 mb-6">Invitación para la lista: {{list.id}}--{{list.name}}</p>
+            
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold text-gray-700 mb-2">Comparte este enlace</h2>
+                <div class="flex items-center">
+                    <input type="text" value="{{share_url}}" readonly class="flex-grow px-3 py-2 bg-gray-100 rounded-l-lg focus:outline-none" id="share-url">
+                    <button onclick="copyToClipboard()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-r-lg transition duration-200">
+                        Copy Link
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold text-gray-700 mb-2">O escanea este QR</h2>
+                <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Code" class="w-full h-auto rounded-lg shadow-sm">
+            </div>
         </div>
-        <button class="btn btn-primary mt-3" onclick="copyToClipboard()">Copy Link</button>
-        <hr>
-        <p>O dejale que escaneé este QR</p>
-        <img src="data:image/png;base64,{{ qr_code_base64 }}" alt="QR Code not found" style="width: 100%; height: auto;">
-        
     </div>
 </div>
 
 <script>
-    function copyToClipboard() {
-        // Texto fijo que deseas copiar
-        const text = "{{share_url}}";
-
-        // Crea un campo de texto temporal para copiar el contenido
-        const tempInput = document.createElement("textarea");
-        tempInput.value = text;
-        document.body.appendChild(tempInput);
-
-        // Selecciona y copia el texto
-        tempInput.select();
-        document.execCommand("copy");
-
-        // Elimina el campo de texto temporal
-        document.body.removeChild(tempInput);
-    }
+function copyToClipboard() {
+    const shareUrl = document.getElementById('share-url');
+    shareUrl.select();
+    document.execCommand('copy');
+    
+    // Optional: Show a tooltip or change button text to indicate successful copy
+    const copyButton = shareUrl.nextElementSibling;
+    const originalText = copyButton.textContent;
+    copyButton.textContent = 'Copied!';
+    setTimeout(() => {
+        copyButton.textContent = originalText;
+    }, 2000);
+}
 </script>
 {% endblock %}
