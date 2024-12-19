@@ -178,14 +178,21 @@ def user_details(request, username):
         profile = Profile.objects.get(user=user)
     except Profile.DoesNotExist:
         raise Http404("Profile does not exist")
-    lists = List.objects.filter(creator=user, is_public=True)
     if request.method == 'GET': 
         return render(request, 'user_details.html', {
             'user_info': user,
             'profile': profile,
-            'lists': lists
         })
-    
+
+def load_user_lists(request, username):
+    user = get_object_or_404(User, username=username)
+    offset = int(request.GET.get('offset', 0))
+    limit = int(request.GET.get('limit', 10))
+    lists = List.objects.filter(creator=user, is_public=True)[offset:offset+limit]
+    lists_data = [{'id': list.id, 'name': list.name} for list in lists]
+    has_more = List.objects.filter(creator=user, is_public=True).count() > offset + limit
+    return JsonResponse({'lists': lists_data, 'has_more': has_more})
+
 def profile_settings(request):
     if request.method == 'GET':
         if hasattr(request.user, 'profile'):

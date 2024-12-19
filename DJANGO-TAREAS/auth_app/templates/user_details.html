@@ -16,20 +16,37 @@
         </div>
         <div class="bg-white rounded-lg shadow-md p-6 flex-grow">
             <h3 class="text-[#0e141b] text-2xl font-bold mb-4">Listas creadas por {{ user_info.username }}</h3>
-            {% if lists %}
-                <ul class="space-y-4">
-                    {% for list in lists %}
-                        <li class="bg-[#e7edf3] rounded-lg p-4 flex items-center space-x-4">
-                            <div class="flex-grow">
-                                <h5 class="text-lg font-bold text-[#0e141b]">{{ list.name }}</h5>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p class="text-[#0e141b]">Este usuario aún no ha publicado nada.</p>
-            {% endif %}
+            <ul id="user-lists" class="space-y-4"></ul>
+            <button id="load-more" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg mt-4">Cargar más</button>
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let offset = 0;
+        const limit = 10;
+        const loadMoreButton = document.getElementById('load-more');
+        const userListsContainer = document.getElementById('user-lists');
+
+        function loadUserLists() {
+            fetch(`{% url 'load_user_lists' user_info.username %}?offset=${offset}&limit=${limit}`)
+                .then(response => response.json())
+                .then(data => {
+                    data.lists.forEach(list => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'bg-[#e7edf3] rounded-lg p-4 flex items-center space-x-4';
+                        listItem.innerHTML = `<div class="flex-grow"><h5 class="text-lg font-bold text-[#0e141b]">${list.name}</h5></div>`;
+                        userListsContainer.appendChild(listItem);
+                    });
+                    if (!data.has_more) {
+                        loadMoreButton.style.display = 'none';
+                    }
+                    offset += limit;
+                });
+        }
+
+        loadMoreButton.addEventListener('click', loadUserLists);
+        loadUserLists();
+    });
+</script>
 {% endblock %}

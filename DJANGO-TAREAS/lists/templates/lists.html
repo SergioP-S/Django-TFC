@@ -18,26 +18,73 @@
             <a href="{% url 'lists' %}" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Clear</a>
         </div>
     </form>
-    {% if lists %}
-        <div class="space-y-4">
-            {% for list in lists %}
-            <div class="{% if request.user == list.creator %}bg-gradient-to-r from-green-400 to-green-500{% else %}bg-gradient-to-r from-yellow-400 to-yellow-500{% endif %} rounded-lg shadow-md p-4 flex items-center space-x-4 cursor-pointer transform transition-transform hover:scale-105" onclick="location.href='{% url 'list_details' list.id %}'">
-                <div class="flex-grow">
-                    <h3 class="text-lg font-bold text-white">{{list.name}}</h3>
-                    <p class="text-white">Creado por {{list.creator.username}}</p>
-                </div>
-                <div class="flex space-x-2">
-                    {% for collaborator in list.collaborators.all %}
-                    <a href="{% url 'user_details' collaborator.username %}" title="{{collaborator.username}}">
-                        <img src="../media/{{ collaborator.profile.pic }}" class="rounded-full w-10 h-10" alt="{{collaborator.username}}">
-                    </a>
-                    {% endfor %}
-                </div>
+    <div class="space-y-4" id="lists-container">
+        {% for list in lists %}
+        <div class="{% if request.user == list.creator %}bg-gradient-to-r from-green-400 to-green-500{% else %}bg-gradient-to-r from-yellow-400 to-yellow-500{% endif %} rounded-lg shadow-md p-4 flex items-center space-x-4 cursor-pointer transform transition-transform hover:scale-105" onclick="location.href='{% url 'list_details' list.id %}'">
+            <div class="flex-grow">
+                <h3 class="text-lg font-bold text-white">{{list.name}}</h3>
+                <p class="text-white">Creado por {{list.creator.username}}</p>
             </div>
-            {% endfor %}
+            <div class="flex space-x-2">
+                {% for collaborator in list.collaborators.all %}
+                <a href="{% url 'user_details' collaborator.username %}" title="{{collaborator.username}}">
+                    <img src="../media/{{ collaborator.profile.pic }}" class="rounded-full w-10 h-10" alt="{{collaborator.username}}">
+                </a>
+                {% endfor %}
+            </div>
         </div>
-    {% else %}
-        <p class="text-[#0e141b]">No se encontraron listas con el término buscado.</p>
+        {% endfor %}
+    </div>
+    <div id="loading" class="text-center py-4 hidden">Cargando...</div>
+    {% if lists.has_next %}
+    <div class="text-center py-4">
+        <button id="load-more" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">Cargar más</button>
+    </div>
     {% endif %}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loadMoreButton = document.getElementById('load-more');
+    const listsContainer = document.getElementById('lists-container');
+    const loadingIndicator = document.getElementById('loading');
+    let page = 2;
+
+    loadMoreButton.addEventListener('click', function() {
+        loadingIndicator.classList.remove('hidden');
+        fetch(`?page=${page}&search={{ search_query }}&filter={{ filter_type }}`, {
+            headers: {
+                'x-requested-with': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            data.lists.forEach(list => {
+                const listElement = document.createElement('div');
+                listElement.className = `rounded-lg shadow-md p-4 flex items-center space-x-4 cursor-pointer transform transition-transform hover:scale-105 ${list.creator === '{{ request.user.username }}' ? 'bg-gradient-to-r from-green-400 to-green-500' : 'bg-gradient-to-r from-yellow-400 to-yellow-500'}`;
+                listElement.onclick = () => location.href = `/lists/${list.id}/`;
+                listElement.innerHTML = `
+                    <div class="flex-grow">
+                        <h3 class="text-lg font-bold text-white">${list.name}</h3>
+                        <p class="text-white">Creado por ${list.creator}</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        ${list.collaborators.map(collaborator => `
+                            <a href="/users/${collaborator.username}/" title="${collaborator.username}">
+                                <img src="${collaborator.profile_pic}" class="rounded-full w-10 h-10" alt="${collaborator.username}">
+                            </a>
+                        `).join('')}
+                    </div>
+                `;
+                listsContainer.appendChild(listElement);
+            });
+            if (!data.has_next) {
+                loadMoreButton.classList.add('hidden');
+            }
+            loadingIndicator.classList.add('hidden');
+            page++;
+        });
+    });
+});
+</script>
 {% endblock %}

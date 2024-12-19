@@ -14,35 +14,45 @@ import qrcode # type: ignore
 from io import BytesIO
 from django.core.files.uploadedfile import InMemoryUploadedFile
 import base64
+from django.core.paginator import Paginator
 
 @login_required
 def lists(request):
-    """
-    View function to display lists for the logged-in user.
-    This function retrieves lists from the database where the logged-in user is either the creator or a collaborator.
-    The lists are ordered by their creation date and duplicates are removed.
-    Args:
-        request (HttpRequest): The HTTP request object containing metadata about the request.
-    Returns:
-        HttpResponse: The rendered 'lists.html' template with the context containing the title and the lists.
-    """
     search_query = request.GET.get('search', '')
     filter_type = request.GET.get('filter', 'both')
-
+    
+    lists = List.objects.filter(name__icontains=search_query)
     if filter_type == 'creator':
-        lists = List.objects.filter(creator=request.user, name__icontains=search_query).order_by('created_on').distinct()
+        lists = lists.filter(creator=request.user)
     elif filter_type == 'collaborator':
-        lists = List.objects.filter(collaborators=request.user, name__icontains=search_query).order_by('created_on').distinct()
-    else:
-        lists = List.objects.filter(
-            (Q(creator=request.user) | Q(collaborators=request.user)) & Q(name__icontains=search_query)
-        ).order_by('created_on').distinct()
-
+        lists = lists.filter(collaborators=request.user)
+    
+    paginator = Paginator(lists, 10)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        lists_data = [
+            {
+                'id': list_item.id,
+                'name': list_item.name,
+                'creator': list_item.creator.username,
+                'collaborators': [
+                    {
+                        'username': collaborator.username,
+                        'profile_pic': collaborator.profile.pic.url if collaborator.profile.pic else ''
+                    }
+                    for collaborator in list_item.collaborators.all()
+                ]
+            }
+            for list_item in page_obj.object_list
+        ]
+        return JsonResponse({'lists': lists_data, 'has_next': page_obj.has_next()})
+    
     return render(request, 'lists.html', {
-        'title': 'Lists',
-        'lists': lists,
+        'lists': page_obj,
         'search_query': search_query,
-        'filter_type': filter_type
+        'filter_type': filter_type,
     })
 
 @login_required
@@ -113,35 +123,39 @@ def add_item(request, list_id):
     request (HttpRequest): The HTTP request object containing metadata about the request.
     list_id (int): The ID of the list to which the item will be added.
     Returns:
-    HttpResponse: Renders the 'add_item.html' template with a form if the request method is GET.
-    HttpResponseRedirect: Redirects to the 'lists' view if the item is successfully added.
-    HttpResponse: Renders the 'add_item.html' template with an error message if there is an exception.
+    HttpResponseRedirect: Redirects to the list details page if the item is successfully added.
     Raises:
     Http404: If the list with the given list_id does not exist.
     """
-
-
     list_obj = get_object_or_404(List, pk=list_id)
 
-    if request.method == 'GET': 
-        return render(request, 'add_item.html', {
-            'form': NewItemForm,
-            'list_id': list_id
-        })
-    else:
-        try:
-            form = NewItemForm(request.POST)
+    if request.method == 'POST':
+        form = NewItemForm(request.POST)
+        if form.is_valid():
             new_item = form.save(commit=False)
             new_item.added_by = request.user
             new_item.list = list_obj
             new_item.save()
-            items = Item.objects.filter(list=list_obj).order_by('added_on')
             return redirect('list_details', list_id=list_id)
-        except:
-            return render(request, 'add_item.html', {
-            'form': ListForm,
-            'error': 'Error, introduzca datos válidos'
+        else:
+            items = Item.objects.filter(list=list_id).order_by('added_on')
+            tags = Tag.objects.filter(list=list_id)
+            return render(request, 'list_details.html', {
+                'title': "Detalles de la lista",
+                'list': list_obj,
+                'items': items,
+                'tags': tags,
+                'error': 'Error, introduzca datos válidos para el item',
+                'collaborators': [
+                    {
+                        'username': collaborator.username,
+                        'profile_pic': collaborator.profile.pic.url if collaborator.profile.pic else ''
+                    }
+                    for collaborator in list_obj.collaborators.all()
+                ]
             })
+    else:
+        raise Http404
 
 @login_required
 def delete_item(request, item_id, list_id):
@@ -346,7 +360,6 @@ def delete_list(request, list_id):
 
 
 
-
 def accept_invitation(request, list_id, signed_key):
     """
     Handles the acceptance of an invitation to collaborate on a list.
@@ -533,6 +546,7 @@ def complete_list(request, list_id):
     items.update(is_done=True)
     return redirect('list_details', list_id=list_id)
 
+@login_required
 def add_tag(request, list_id):
     """
     Handles the addition of a new tag to a specific list.
@@ -560,12 +574,23 @@ def add_tag(request, list_id):
             new_tag = form.save(commit=False)
             new_tag.list = list_obj
             new_tag.save()
-            tags = Tag.objects.filter(list=list_obj)
             return redirect('list_details', list_id=list_id)
         except:
-            return render(request, 'add_tag.html', {
-            'form': AddTagForm,
-            'error': 'Error, introduzca datos válidos'
+            items = Item.objects.filter(list=list_id).order_by('added_on')
+            tags = Tag.objects.filter(list=list_id)
+            return render(request, 'list_details.html', {
+                'title': "Detalles de la lista",
+                'list': list_obj,
+                'items': items,
+                'tags': tags,
+                'error': 'Error, introduzca datos válidos para el tag',
+                'collaborators': [
+                    {
+                        'username': collaborator.username,
+                        'profile_pic': collaborator.profile.pic.url if collaborator.profile.pic else ''
+                    }
+                    for collaborator in list_obj.collaborators.all()
+                ]
             })
         
 @login_required
