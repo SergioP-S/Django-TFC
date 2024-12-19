@@ -7,8 +7,25 @@
         <p class="text-[#4e7397] mb-4">Tu familia o amigos podrán añadir items, o consultar los que ya estén.</p>
         <form action="/lists/create/" method="post">
             {% csrf_token %}
-            {{form.as_p}}
-            <button class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg w-full mt-4">Submit</button>
+            {{ form.non_field_errors }}
+            <div class="mb-4">
+                {{ form.name.label_tag }}
+                {{ form.name }}
+            </div>
+            <div class="mb-4">
+                {{ form.description.label_tag }}
+                {{ form.description }}
+            </div>
+            <div class="mb-4 flex items-center">
+                {{ form.is_public }}
+                <span class="text-sm text-gray-600 flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Hacer pública la lista
+                </span>
+            </div>
+            <button type="submit" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg w-full">Crear Lista</button>
         </form>
     </div>
 </div>

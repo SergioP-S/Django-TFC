@@ -78,7 +78,7 @@ def signup(request):
         print('enviando formulario')
         return render(request, 'signup.html', {
             'form': CustomUserCreationForm,
-    })
+        })
     else: 
         if request.POST['password1'] ==  request.POST['password2']:
            try: 
@@ -184,6 +184,7 @@ def user_details(request, username):
             'profile': profile,
         })
 
+@login_required
 def load_user_lists(request, username):
     user = get_object_or_404(User, username=username)
     offset = int(request.GET.get('offset', 0))
