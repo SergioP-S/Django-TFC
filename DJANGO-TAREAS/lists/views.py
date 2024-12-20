@@ -569,6 +569,23 @@ def add_tag(request, list_id):
             'list_id': list_id
         })
     else:
+        if Tag.objects.filter(list=list_obj).count() >= 5:
+            items = Item.objects.filter(list=list_id).order_by('added_on')
+            tags = Tag.objects.filter(list=list_id)
+            return render(request, 'list_details.html', {
+                'title': "Detalles de la lista",
+                'list': list_obj,
+                'items': items,
+                'tags': tags,
+                'error': 'No se pueden añadir más de 5 etiquetas',
+                'collaborators': [
+                    {
+                        'username': collaborator.username,
+                        'profile_pic': collaborator.profile.pic.url if collaborator.profile.pic else ''
+                    }
+                    for collaborator in list_obj.collaborators.all()
+                ]
+            })
         try:
             form = AddTagForm(request.POST)
             new_tag = form.save(commit=False)

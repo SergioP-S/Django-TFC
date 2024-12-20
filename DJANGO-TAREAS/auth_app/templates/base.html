@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AUTENTICACIÓN</title>
+    <title>Listopia</title>
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
     <link rel="stylesheet" as="style" onload="this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Work+Sans%3Awght%40400%3B500%3B700%3B900" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -69,6 +69,24 @@
         #accept-cookies:hover {
             background-color: #0056b3;
         }
+        @media (max-width: 640px) {
+            .nav-links {
+                display: none;
+            }
+            .user-menu-button span {
+                display: none;
+            }
+        }
+        body {
+            padding-top: 64px; /* Adjust based on the navbar height */
+        }
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 1000;
+        }
     </style>
 </head>
 
@@ -78,16 +96,18 @@
             <a class="text-white text-lg font-bold" href="{% url 'home' %}">Listopia</a>
             <div class="flex items-center space-x-4">
                 {% if user.is_authenticated %}
-                    <a class="text-white" href="{% url 'lists' %}"><i class="fas fa-list mx-1"></i>Mis Listas</a>
-                    <a class="text-white" href="{% url 'create_list' %}"><i class="fas fa-list mx-1"></i>Crear Lista</a>
+                    <div class="nav-links flex items-center space-x-4">
+                        <a class="text-white" href="{% url 'lists' %}"><i class="fas fa-list mx-1"></i>Mis Listas</a>
+                        <a class="text-white" href="{% url 'create_list' %}"><i class="fas fa-list mx-1"></i>Crear Lista</a>
+                    </div>
                     <div class="relative">
-                        <button class="text-white flex items-center space-x-2" id="user-menu-button">
+                        <button class="text-white flex items-center space-x-2 user-menu-button" id="user-menu-button">
                             <img src="../../media/{{ user.profile.pic }}" class="rounded-full w-8 h-8" alt="{{user.username}}">
                             <span>{{user.username}}</span>
                         </button>
                         <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden" id="user-menu">
-                            <a href="{% url 'user_details' username=user.username %}" class="block px-4 py-2 text-sm text-gray-700">Mi Cuenta</a>
-                            <a href="{% url 'profile_settings' %}" class="block px-4 py-2 text-sm text-gray-700">Profile Settings</a>
+                            <a href="{% url 'user_details' username=user.username %}" class="block px-4 py-2 text-sm text-gray-700">Mi Perfil</a>
+                            <a href="{% url 'profile_settings' %}" class="block px-4 py-2 text-sm text-gray-700">Ajustes de la Cuenta</a>
                             <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-red-600">Cerrar Sesión</a>
                         </div>
                     </div>
