@@ -11,11 +11,12 @@
     <div class="flex justify-between items-start mb-6">
         <div>
             <h2 class="text-3xl font-bold mb-2">{{ list.name }}</h2>
-            <p class="text-gray-600 text-sm">Creada en: {{ list.created_on }} por {{list.creator}}</p>
+            <p class="text-gray-600 text-sm">Creada el {{ list.created_on|date:"d/m/Y" }} por {{list.creator}}</p>
+            <p>Detalles: {{list.description}}</p>
         </div>
         {% if request.user == list.creator or request.user in list.collaborators.all %}
         <div class="flex gap-2">
-            <a class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center" href="{% url 'share_list' list_id=list.id %}">
+            <a class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center" href="#" id="share-list-button">
                 Compartir
             </a>
             <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg" id="toggle-admin-panel">
@@ -161,9 +162,9 @@
 
         {% if request.user == list.creator %}
             <div class="space-y-4">
-                <a class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg" href="{% url 'modify_list' list_id=list.id %}">
-                    Modificar Detalles de la lista
-                </a>
+            <a class="block w-full bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-2 px-4 rounded-lg text-center" href="{% url 'modify_list' list_id=list.id %}">
+                Modificar Detalles de la lista
+            </a>
                 <form method="POST" action="{% url 'empty_list' list_id=list.id %}" onsubmit="return confirmSend(event, this, '¿Quieres vaciar la lista?')">
                     {% csrf_token %}
                     <button type="submit" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-semibold py-2 px-4 rounded-lg">
@@ -233,6 +234,136 @@ document.addEventListener('DOMContentLoaded', function() {
         }).then((result) => {
             if (result.isConfirmed) {
                 form.submit();
+            }
+        });
+    };
+
+    const shareButton = document.getElementById('share-list-button');
+    shareButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        fetch("{% url 'share_list' list_id=list.id %}")
+            .then(response => response.json())
+            .then(data => {
+                Swal.fire({
+                    title: 'Compartir Lista',
+                    html: `
+                        <div class="flex justify-center mb-4">
+                            <button onclick="copyToClipboard('${data.share_url}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
+                                Copiar Enlace de Invitación
+                            </button>
+                        </div>
+                        <p>O escanea este QR:</p>
+                        <img src="data:image/png;base64,${data.qr_code_base64}" alt="QR Code" class="w-full h-auto rounded-lg shadow-sm">
+                    `,
+                    showCloseButton: true,
+                    focusConfirm: false,
+                    confirmButtonText: 'Cerrar'
+                });
+            });
+    });
+
+    window.copyToClipboard = function(url) {
+        const tempInput = document.createElement('input');
+        tempInput.value = url;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+
+        Swal.fire({
+            icon: 'success',
+            title: '¡Copiado!',
+            text: 'El enlace de invitación ha sido copiado al portapapeles.',
+            timer: 2000,
+            showConfirmButton: false
+        });
+    };
+
+    const modifyListButton = document.querySelector('a[href="{% url 'modify_list' list_id=list.id %}"]');
+    modifyListButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        fetch("{% url 'get_list_details' list_id=list.id %}")
+            .then(response => response.json())
+            .then(data => {
+                let tagsHtml = '';
+                data.tags.forEach(tag => {
+                    tagsHtml += `
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="bg-[${tag.color}] text-sm font-medium px-3 py-1 rounded-full">${tag.name}</span>
+                            <button class="bg-red-600 text-white font-bold py-1 px-2 rounded-lg" onclick="deleteTag(${tag.id})">Eliminar</button>
+                        </div>
+                    `;
+                });
+
+                Swal.fire({
+                    title: 'Modificar Detalles de la Lista',
+                    html: `
+                        <form id="modify-list-form">
+                            <input type="text" name="name" value="${data.name}" class="w-full border rounded px-2 py-1 mb-2" placeholder="Nombre de la Lista">
+                            <textarea name="description" class="w-full border rounded px-2 py-1 mb-2" placeholder="Descripción">${data.description}</textarea>
+                            <div id="tags-container">${tagsHtml}</div>
+                            <button type="submit" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Guardar Cambios</button>
+                        </form>
+                    `,
+                    showCloseButton: true,
+                    showConfirmButton: false
+                });
+
+                document.getElementById('modify-list-form').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const formData = new FormData(this);
+                    fetch("{% url 'modify_list' list_id=list.id %}", {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}'
+                        }
+                    }).then(response => {
+                        if (response.ok) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Guardado!',
+                                text: 'Los detalles de la lista han sido modificados.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'No se pudieron guardar los cambios.',
+                            });
+                        }
+                    });
+                });
+            });
+    });
+
+    window.deleteTag = function(tagId) {
+        fetch("{% url 'delete_tags' list_id=list.id %}", {
+            method: 'POST',
+            body: new URLSearchParams({ 'selected_tags': tagId }),
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        }).then(response => {
+            if (response.ok) {
+                document.querySelector(`#tags-container div[data-tag-id="${tagId}"]`).remove();
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Eliminado!',
+                    text: 'El tag ha sido eliminado.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo eliminar el tag.',
+                });
             }
         });
     };

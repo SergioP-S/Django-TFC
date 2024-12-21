@@ -17,4 +17,5 @@ urlpatterns = [
     path('<int:list_id>/share/<str:signed_key>/', views.accept_invitation, name='accept_invitation'),
     path('<int:list_id>/add_tag/', views.add_tag, name='add_tag'),
     path('<int:list_id>/delete_tags/', views.delete_tags, name='delete_tags'),
+    path('<int:list_id>/get_details/', views.get_list_details, name='get_list_details'),
 ]

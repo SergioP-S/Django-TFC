@@ -23,7 +23,7 @@ class NewItemForm(ModelForm):
 class ModifyListForm(ModelForm):
     class Meta:
         model = List
-        fields = ['description', 'is_public']
+        fields = ['name','description', 'is_public']
         widgets = {
             'description': TextInput(attrs={'placeholder': 'Descripción', 'class': 'w-full p-2 border rounded'}),
             'is_public': CheckboxInput(attrs={'class': 'mr-2'}),

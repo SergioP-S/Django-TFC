@@ -21,7 +21,10 @@ def lists(request):
     search_query = request.GET.get('search', '')
     filter_type = request.GET.get('filter', 'both')
     
-    lists = List.objects.filter(name__icontains=search_query)
+    lists = List.objects.filter(
+        Q(name__icontains=search_query) & 
+        (Q(creator=request.user) | Q(collaborators=request.user))
+    )
     if filter_type == 'creator':
         lists = lists.filter(creator=request.user)
     elif filter_type == 'collaborator':
@@ -242,8 +245,8 @@ def modify_list(request, list_id):
                 form = ModifyListForm(request.POST, instance=list)
                 if form.is_valid():
                     modified_list = form.save(commit=False)  # No se guarda aún en la base de datos
-                    modified_list.last_modified = timezone.now() # Actualiza last_modified
-                    modified_list.modified_by = request.user  # Establece modified_by
+                    modified_list.name = form.cleaned_data['name']  # Actualiza el nombre
+                    modified_list.description = form.cleaned_data['description']  # Actualiza la descripción
                     modified_list.save()  # Guarda finalmente en la base de datos
                     return redirect(f'/lists/{list_id}/')
             except Exception as e:
@@ -372,8 +375,8 @@ def accept_invitation(request, list_id, signed_key):
         signed_key (str): The signed key containing the invitation details.
     Returns:
         HttpResponse: Redirects to the list details page if the invitation is accepted.
-                        Renders an expired invitation page if the invitation has expired.
-                        Returns a bad request response if the signature is invalid or expired.
+                      Renders an expired invitation page if the invitation has expired.
+                      Returns a bad request response if the signature is invalid or expired.
     Raises:
         signing.SignatureExpired: If the signed key has expired.
         signing.BadSignature: If the signed key is invalid.
@@ -457,20 +460,21 @@ def share_list(request, list_id):
         request (HttpRequest): The HTTP request object.
         list_id (int): The ID of the list to be shared.
     Returns:
-        HttpResponse: If the request method is GET, renders the 'share_list.html' template
-                        with the list and the generated share URL.
+        JsonResponse: Returns the share URL and QR code base64 string.
     """
 
     list_obj = get_object_or_404(List, pk=list_id)
+
+    if request.user != list_obj.creator and request.user not in list_obj.collaborators.all():
+        raise Http404
+
     share_url = request.build_absolute_uri(generate_share_url(list_id))
     qr_code_base64 = generate_qr_code(share_url)
 
-    if request.method == 'GET':
-        return render(request, 'share_list.html', {
-            'list': list_obj,
-            'share_url': share_url,
-            'qr_code_base64': qr_code_base64
-        })
+    return JsonResponse({
+        'share_url': share_url,
+        'qr_code_base64': qr_code_base64
+    })
 
 @login_required
 def kick_collaborator(request, collaborator, list_id):
@@ -627,3 +631,23 @@ def delete_tags(request, list_id):
         return redirect('list_details', list_id=list_id)
     else:
         return Http404
+
+@login_required
+def get_list_details(request, list_id):
+    """
+    Fetch list details and tags for the SweetAlert form.
+    Args:
+        request (HttpRequest): The HTTP request object.
+        list_id (int): The ID of the list.
+    Returns:
+        JsonResponse: Returns the list details and tags.
+    """
+    list_obj = get_object_or_404(List, pk=list_id)
+    tags = Tag.objects.filter(list=list_obj)
+    tags_data = [{'id': tag.id, 'name': tag.name, 'color': tag.color} for tag in tags]
+    list_data = {
+        'name': list_obj.name,
+        'description': list_obj.description,
+        'tags': tags_data
+    }
+    return JsonResponse(list_data)

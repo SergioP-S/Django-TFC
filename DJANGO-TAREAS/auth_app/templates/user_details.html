@@ -1,23 +1,24 @@
 {% extends 'base.html' %} <!--Para usar el template llamado base.html-->
 
 {% block content %}
-<div class="container mx-auto py-10">
+<div class="max-w-5xl mx-auto p-6">
     <div class="flex flex-col md:flex-row gap-6">
-        <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-center md:w-1/3">
-            <img src="../media/{{ user_info.profile.pic }}" alt="User Profile Picture" class="rounded-full w-32 h-32 mb-4">
+        <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-start md:w-1/3">
+            <img src="../media/{{ user_info.profile.pic }}" alt="User Profile Picture" class="rounded-full w-full h-auto mb-4">
             <h2 class="text-[#0e141b] text-2xl font-bold mb-2">{{ user_info.username }}</h2>
-            <p class="text-[#4e7397] text-base mb-4">{{ user_info.email }}</p>
-            {% if user_info.profile %}
-                <p class="text-[#0e141b] text-base">{{ user_info.profile.description }}</p>
-            {% else %}
-                <p class="text-[#0e141b] text-base">Aún no has completado tu perfil.</p>
-                <a href="{% url 'complete_profile' %}" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg mt-4">Completar perfil</a>
+            <hr class="w-full mb-4">
+            <p class="text-[#4e7397] text-base mb-4">Se unió el {{request.user.date_joined | date:"m/Y"}}</p>
+            <h3 class="text-lg font-semibold mb-2">Sobre mí:</h3>
+            <p class="text-[#0e141b] text-base">{{ user_info.profile.description }}</p>
+            {% if request.user == user_info %}
+            <a href="{% url 'profile_settings' %}" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg mt-4">Modificar Perfil</a>
             {% endif %}
         </div>
         <div class="bg-white rounded-lg shadow-md p-6 flex-grow">
-            <h3 class="text-[#0e141b] text-2xl font-bold mb-4">Listas creadas por {{ user_info.username }}</h3>
+            <h3 class="text-[#0e141b] text-2xl font-bold mb-4">Listas publicadas por {{ user_info.username }}</h3>
             <ul id="user-lists" class="space-y-4"></ul>
-            <button id="load-more" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg mt-4">Cargar más</button>
+            <p id="no-lists-message" class="px-6 py-4 text-gray-500 text-center italic hidden">Este usuario aún no ha publicado ninguna lista</p>
+            <button id="load-more" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg mt-4 hidden">Cargar más</button>
         </div>
     </div>
 </div>
@@ -27,21 +28,29 @@
         const limit = 10;
         const loadMoreButton = document.getElementById('load-more');
         const userListsContainer = document.getElementById('user-lists');
+        const noListsMessage = document.getElementById('no-lists-message');
 
         function loadUserLists() {
             fetch(`{% url 'load_user_lists' user_info.username %}?offset=${offset}&limit=${limit}`)
                 .then(response => response.json())
                 .then(data => {
-                    data.lists.forEach(list => {
-                        const listItem = document.createElement('li');
-                        listItem.className = 'bg-[#e7edf3] rounded-lg p-4 flex items-center space-x-4';
-                        listItem.innerHTML = `<div class="flex-grow"><h5 class="text-lg font-bold text-[#0e141b]">${list.name}</h5></div>`;
-                        userListsContainer.appendChild(listItem);
-                    });
-                    if (!data.has_more) {
-                        loadMoreButton.style.display = 'none';
+                    if (data.lists.length === 0 && offset === 0) {
+                        noListsMessage.classList.remove('hidden');
+                    } else {
+                        noListsMessage.classList.add('hidden');
+                        data.lists.forEach(list => {
+                            const listItem = document.createElement('li');
+                            listItem.className = 'bg-[#e7edf3] rounded-lg p-4 flex items-center space-x-4';
+                            listItem.innerHTML = `<div class="flex-grow"><h5 class="text-lg font-bold text-[#0e141b]">${list.name}</h5></div>`;
+                            userListsContainer.appendChild(listItem);
+                        });
+                        if (data.has_more) {
+                            loadMoreButton.classList.remove('hidden');
+                        } else {
+                            loadMoreButton.classList.add('hidden');
+                        }
+                        offset += limit;
                     }
-                    offset += limit;
                 });
         }
 
