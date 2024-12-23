@@ -40,7 +40,8 @@
                         noListsMessage.classList.add('hidden');
                         data.lists.forEach(list => {
                             const listItem = document.createElement('li');
-                            listItem.className = 'bg-[#e7edf3] rounded-lg p-4 flex items-center space-x-4';
+                            listItem.className = 'bg-[#e7edf3] rounded-lg p-4 flex items-center space-x-4 cursor-pointer transform transition-transform hover:scale-105';
+                            listItem.onclick = () => location.href = `/lists/${list.id}/`;
                             listItem.innerHTML = `<div class="flex-grow"><h5 class="text-lg font-bold text-[#0e141b]">${list.name}</h5></div>`;
                             userListsContainer.appendChild(listItem);
                         });

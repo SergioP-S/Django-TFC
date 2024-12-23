@@ -40,7 +40,7 @@
             </div>
             <div class="flex-grow">
                 <h3 class="text-lg font-bold text-[#0e141b]">{{list.name}}</h3>
-                <p class="text-gray-600">{{ list.description|truncatewords:10 }}</p>
+                <p class="text-gray-600">{{ list.description|truncatechars:80 }}</p>
             </div>
             <div class="flex space-x-2">
                 {% for collaborator in list.collaborators.all %}
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                     <div class="flex-grow">
                         <h3 class="text-lg font-bold text-[#0e141b]">${list.name}</h3>
-                        <p class="text-gray-600">Creado por ${list.creator}</p>
+                        <p class="text-gray-600">${list.description.length > 80 ? list.description.substring(0, list.description.lastIndexOf(' ', 80)) + '...' : list.description}</p>
                     </div>
                     <div class="flex space-x-2">
                         ${list.collaborators.map(collaborator => `

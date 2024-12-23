@@ -1,13 +1,21 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-    <div class="container mx-auto py-10">
+    <div class="max-w-5xl mx-auto py-10">
         <div class="bg-cover bg-center bg-no-repeat rounded-xl p-10" style='background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%), url("https://cdn.usegalileo.ai/sdxl10/c2db0b58-24e4-471c-8076-fe46520bbb4c.png");'>
-            <h1 class="text-white text-4xl font-black mb-4">Bienvenido a Listopia, {{user}}</h1>
+            {% if user.is_authenticated %}
+                <h1 class="text-white text-4xl font-black mb-4">Bienvenido a Listopia, {{ user }}</h1>
+            {% else %}
+                <h1 class="text-white text-4xl font-black mb-4">Bienvenido a Listopia</h1>
+            {% endif %}
             <p class="text-white text-lg mb-6">¡Crea listas de lo que quieras!</p>
-            <a href="{% url 'create_list' %}" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">Comienza creando una lista</a>
+            <a href="{% url 'create_list' %}" class="bg-[#1980e6] text-white font-bold py-4 px-8 rounded-xl text-lg hover:bg-[#0e6bb8] transition duration-300">Comienza creando una lista</a>
         </div>
-        <h2 class="text-[#0e141b] text-2xl font-bold mt-10 mb-4">Echa un vistazo a las listas publicadas por otros usuarios</h2>
+       
+        <h2 class="text-[#0e141b] text-2xl font-bold mt-10 mb-4">Echa un vistazo a las últimas listas publicadas por otros usuarios</h2>
+        <div class="flex items-center space-x-4 mb-4">
+            <input type="text" id="search-bar" class="form-input flex-grow bg-[#e7edf3] text-[#0e141b] placeholder-[#4e7397] rounded-xl px-4 py-2" placeholder="Buscar listas...">
+        </div>
         <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="public-lists">
             <!-- Lists will be loaded here via AJAX -->
         </ul>
@@ -17,13 +25,17 @@
     </div>
     <script>
         let offset = 0;
-        const limit = 10;
+        const limit = 30;
 
         function loadLists() {
-            fetch(`/load_lists/?offset=${offset}&limit=${limit}`)
+            const searchQuery = document.getElementById('search-bar').value;
+            fetch(`/load_lists/?offset=${offset}&limit=${limit}&search=${searchQuery}`)
                 .then(response => response.json())
                 .then(data => {
                     const listsContainer = document.getElementById('public-lists');
+                    if (offset === 0) {
+                        listsContainer.innerHTML = '';
+                    }
                     data.lists.forEach(list => {
                         const listItem = document.createElement('li');
                         listItem.className = "bg-white rounded-lg shadow-md p-4 flex items-center space-x-4";
@@ -44,11 +56,17 @@
                     offset += limit;
                     if (!data.has_more) {
                         document.getElementById('load-more').style.display = 'none';
+                    } else {
+                        document.getElementById('load-more').style.display = 'block';
                     }
                 });
         }
 
         document.getElementById('load-more').addEventListener('click', loadLists);
+        document.getElementById('search-bar').addEventListener('input', () => {
+            offset = 0;
+            loadLists();
+        });
 
         // Initial load
         loadLists();

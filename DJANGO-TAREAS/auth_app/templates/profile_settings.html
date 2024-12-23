@@ -2,59 +2,63 @@
 {% load static %}
 
 {% block content %}
-<div class="container mx-auto py-10">
-    <div class="bg-white rounded-xl shadow-lg p-10">
-        <h2 class="text-gray-800 text-4xl font-black mb-4">Modificar Perfil</h2>
-        <div class="mt-4">
-            <h4 class="text-gray-800 text-2xl font-bold mb-2">Información actual del perfil</h4>
-            <p class="text-gray-600"><strong>Nombre de usuario:</strong> {{ user.username }}</p>
-            <p class="text-gray-600"><strong>Email:</strong> {{ user.email }}</p>
-            <div class="d-flex justify-content-center mt-4">
-                <div class="rounded-full overflow-hidden" style="width: 150px; height: 150px;">
-                    <img src="../media/{{ user.profile.pic }}" alt="Profile Picture" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-            </div>
+<div class="max-w-5xl mx-auto p-6">
+    <div class="flex flex-col md:flex-row gap-6">
+        <div class="bg-white rounded-lg shadow-md p-6 flex flex-col items-start md:w-1/3">
+            <img src="../media/{{ user.profile.pic }}" alt="Profile Picture" class="rounded-full w-full h-auto mb-4">
+            <h2 class="text-[#0e141b] text-2xl font-bold mb-2">{{ user.username }}</h2>
+            <p class="text-[#4e7397] text-base mb-4">{{ user.email }}</p>
+            <hr class="w-full mb-4">
+            <h3 class="text-lg font-semibold mb-2">Sobre mí:</h3>
+            <p class="text-[#0e141b] text-base">{{ user.profile.description }}</p>
         </div>
-        <p style="color: red;">{{error}}</p>
-        <button id="toggle-profile-form-btn" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg mt-3">Modificar los detalles</button>
-        <div id="profile-form-container" style="display: none;">
-            <form action="#" method="post" enctype="multipart/form-data" class="mt-4">
-                {% csrf_token %}
-                {{form.as_p}}
-                <div class="mt-4">
-                    <label for="id_pic" class="text-gray-800">Foto de Perfil</label>
-                    <input type="file" id="id_pic" name="pic" accept="image/*" onchange="previewImage(event)" class="block w-full text-gray-800 mt-2">
-                    <div id="image-preview-container" class="d-flex justify-content-center mt-3" style="display:none;">
-                        <div class="rounded-full overflow-hidden" style="width: 150px; height: 150px;">
-                            <img id="image-preview" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
+        <div class="bg-white rounded-lg shadow-md p-6 flex-grow">
+            <h2 class="text-gray-800 text-4xl font-black mb-4">Modificar Perfil</h2>
+            <h4 class="text-gray-800 text-2xl font-bold mb-2">Cambiar descripción e imagen</h4>
+            <p style="color: red;">{{error}}</p>
+            <button id="toggle-profile-form-btn" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg mt-3" style="display: none;">Modificar los detalles</button>
+            <div id="profile-form-container">
+                <form action="#" method="post" enctype="multipart/form-data" class="mt-4">
+                    {% csrf_token %}
+                    {{form.as_p}}
+                    <div class="mt-4">
+                        <label for="id_pic" class="text-gray-800 block mb-2">Foto de Perfil</label>
+                        <div class="flex items-center">
+                            <label for="id_pic" class="cursor-pointer">
+                                <div class="bg-blue-500 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center">
+                                    <img src="../media/icons/attachment.svg" alt="Upload Icon" class="w-6 h-6">
+                                </div>
+                            </label>
+                            <input type="file" id="id_pic" name="pic" accept="image/*" onchange="previewImage(event)" class="hidden">
+                        </div>
+                        <div id="image-preview-container" class="d-flex justify-content-center mt-3" style="display:none;">
+                            <div class="rounded-full overflow-hidden" style="width: 150px; height: 150px;">
+                                <img id="image-preview" class="img-fluid" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
                         </div>
                     </div>
-                </div>
-                <input type="hidden" id="cropped_image_data" name="cropped_image_data">
-                <button class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg mt-4">Guardar Cambios</button>
-            </form>
-        </div>
-        <div class="mt-6">
-            <button id="toggle-password-form-btn" class="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg mt-3">Cambiar Contraseña</button>
-            <div id="password-form-container" style="display: none;">
-                <form action="{% url 'reset_password' %}" method="post" class="mt-4">
-                    <p class="text-gray-800">¿Quieres cambiar tu contraseña? <a href="{% url 'reset_password' %}" class="text-blue-500">Hazlo aquí</a></p>
+                    <input type="hidden" id="cropped_image_data" name="cropped_image_data">
+                    <button type="submit" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg mt-4">Guardar Cambios</button>
                 </form>
             </div>
-        </div>
-        <div class="mt-6">
-            <h4 class="text-gray-800 text-2xl font-bold mb-2">Eliminar cuenta</h4>
-            <button id="toggle-delete-form-btn" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg mt-3">Eliminar cuenta</button>
-            <div id="delete-form-container" style="display: none;">
-                <form action="{% url 'delete_user' %}" method="post" class="mt-4">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="password" class="text-gray-800">Introduce tu contraseña para eliminar la cuenta:</label>
-                        <input type="password" name="password" class="form-control mt-2" required>
-                    </div>
-                    <button type="submit" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg mt-4">Eliminar cuenta</button>
-                    <p style="color: red;">{{delete_error}}</p>
-                </form>
+            <div class="mt-6">
+                <h4 class="text-gray-800 text-2xl font-bold mb-2">Cambiar Contraseña</h4>
+                <p class="text-gray-800">¿Quieres cambiar tu contraseña? <a href="{% url 'reset_password' %}" class="text-blue-500">Hazlo aquí</a></p>
+            </div>
+            <div class="mt-6">
+                <h4 class="text-gray-800 text-2xl font-bold mb-2">Eliminar cuenta</h4>
+                <button id="toggle-delete-form-btn" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg mt-3">Eliminar cuenta</button>
+                <div id="delete-form-container" style="display: none;">
+                    <form action="{% url 'delete_user' %}" method="post" class="mt-4">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="password" class="text-gray-800">Introduce tu contraseña para eliminar la cuenta:</label>
+                            <input type="password" name="password" class="form-control mt-2" required autocomplete="new-password">
+                        </div>
+                        <button type="submit" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg mt-4">Eliminar cuenta</button>
+                        <p style="color: red;">{{delete_error}}</p>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -65,19 +69,32 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 
 <script>
-    document.getElementById('toggle-profile-form-btn').addEventListener('click', function() {
-        const formContainer = document.getElementById('profile-form-container');
-        formContainer.style.display = formContainer.style.display === 'none' ? 'block' : 'none';
-    });
-
-    document.getElementById('toggle-password-form-btn').addEventListener('click', function() {
-        const formContainer = document.getElementById('password-form-container');
-        formContainer.style.display = formContainer.style.display === 'none' ? 'block' : 'none';
-    });
+    document.getElementById('toggle-profile-form-btn').style.display = 'none';
 
     document.getElementById('toggle-delete-form-btn').addEventListener('click', function() {
-        const formContainer = document.getElementById('delete-form-container');
-        formContainer.style.display = formContainer.style.display === 'none' ? 'block' : 'none';
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'Esta acción no podrá deshacerse',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar cuenta',
+            cancelButtonText: 'Cancelar',
+            html: `
+                <form id="delete-account-form" action="{% url 'delete_user' %}" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <p class="text-red-800">No se podrá deshacer esta acción</p>
+                        <label for="password" class="text-gray-800">Introduce tu contraseña para eliminar la cuenta:</label>
+                        <input type="password" name="password" class="form-control mt-2" required autocomplete="new-password">
+                    </div>
+                </form>
+            `,
+            preConfirm: () => {
+                document.getElementById('delete-account-form').submit();
+            }
+        });
     });
 
     function previewImage(event) {

@@ -44,8 +44,9 @@ def load_lists(request):
         JsonResponse: A JSON response containing the lists and a flag indicating if there are more lists to load.
     """
     offset = int(request.GET.get('offset', 0))
-    limit = int(request.GET.get('limit', 10))
-    public_lists = List.objects.filter(is_public=True)[offset:offset+limit]
+    limit = int(request.GET.get('limit', 30))
+    search_query = request.GET.get('search', '')
+    public_lists = List.objects.filter(is_public=True, name__icontains=search_query).order_by('-created_on')[offset:offset+limit]
     lists_data = [{
         'id': list.id,
         'name': list.name,
@@ -56,7 +57,7 @@ def load_lists(request):
             }
         }
     } for list in public_lists]
-    has_more = List.objects.filter(is_public=True).count() > offset + limit
+    has_more = List.objects.filter(is_public=True, name__icontains=search_query).count() > offset + limit
     return JsonResponse({'lists': lists_data, 'has_more': has_more})
 
 
@@ -223,7 +224,10 @@ def profile_settings(request):
             elif not profile.pic:
                 profile.pic = 'profile_pics/default.jpg'
             profile.save()
-            return redirect('home')
+            return render(request, 'profile_settings.html', {
+                'form': form,
+                'success': 'Perfil actualizado correctamente'
+            })
         else:
             return render(request, 'profile_settings.html', {
                 'form': form,

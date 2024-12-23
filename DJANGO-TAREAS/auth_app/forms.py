@@ -13,9 +13,13 @@ class CustomUserLoginForm(AuthenticationForm):
     username = forms.EmailField(label="Email", widget=forms.EmailInput())
 
 class ProfileForm(forms.ModelForm):
-    class Meta():
-            model = Profile
-            fields = ['description']
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'placeholder': 'Descripción', 'class': 'w-full p-2 border rounded', 'rows': 4})
+    )
+    class Meta:
+        model = Profile
+        fields = ['description']
 
 class PasswordResetForm(SetPasswordForm):
     pass
