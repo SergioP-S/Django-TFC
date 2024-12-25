@@ -76,7 +76,6 @@ def signup(request):
     """
  
     if request.method == 'GET': 
-        print('enviando formulario')
         return render(request, 'signup.html', {
             'form': CustomUserCreationForm,
         })
@@ -84,6 +83,10 @@ def signup(request):
         if request.POST['password1'] ==  request.POST['password2']:
            try: 
                 validate_password(request.POST['password1'])
+                if User.objects.filter(username=request.POST['username']).exists():
+                    raise IntegrityError('El usuario ya existe')
+                if User.objects.filter(email=request.POST['email']).exists():
+                    raise IntegrityError('El correo electrónico ya está en uso')
                 user = User.objects.create_user(username=request.POST['username'], password=request.POST['password1'], email=request.POST['email'], is_active=False)
                 user.save()
                 # Create a profile for the new user
@@ -109,10 +112,10 @@ def signup(request):
                     'form': CustomUserCreationForm,
                     "error": e.messages
                 })
-           except IntegrityError: 
+           except IntegrityError as e: 
                 return render(request, 'signup.html', {
                     'form': CustomUserCreationForm,
-                    "error": 'El usuario ya existe'
+                    "error": str(e)
                 })
         return render(request, 'signup.html', {
                     'form': CustomUserCreationForm,
@@ -195,6 +198,7 @@ def load_user_lists(request, username):
     has_more = List.objects.filter(creator=user, is_public=True).count() > offset + limit
     return JsonResponse({'lists': lists_data, 'has_more': has_more})
 
+@login_required
 def profile_settings(request):
     if request.method == 'GET':
         if hasattr(request.user, 'profile'):
@@ -251,16 +255,23 @@ def delete_user(request):
 def reset_password(request):
     if request.method == 'GET':
         if request.user.is_authenticated:
-            return render(request, 'reset_password.html', {'form': SetPasswordForm(user=request.user)})
+            return render(request, 'reset_password.html', {'form': PasswordResetForm(user=request.user)})
         else:
             return render(request, 'reset_password_email.html', {'form': PasswordResetEmailForm()})
     else:
         if request.user.is_authenticated:
-            form = SetPasswordForm(user=request.user, data=request.POST)
+            form = PasswordResetForm(user=request.user, data=request.POST)
             if form.is_valid():
                 new_password = form.cleaned_data['new_password1']
                 request.user.set_password(new_password)
                 request.user.save()
+                send_mail(
+                    'Contraseña Reestablecida Correctamente',
+                    'Su contraseña ha sido reestablecida.',
+                    settings.EMAIL_HOST_USER,
+                    [request.user.email],
+                    fail_silently=False,
+                )
                 return redirect('signin')
             else:
                 return render(request, 'reset_password.html', {'form': form})
@@ -273,8 +284,8 @@ def reset_password(request):
                 uid = urlsafe_base64_encode(force_bytes(user.pk))
                 reset_link = request.build_absolute_uri(f"/reset_password_confirm/{uid}/{token}/")
                 send_mail(
-                    'Password Reset',
-                    f'Click the link to reset your password: {reset_link}',
+                    'Reestablecimiento de contraseña para Listopia',
+                    f'Entre en este enlace para reestablecer la contraseña de su cuenta: {reset_link}',
                     settings.EMAIL_HOST_USER,
                     [user.email],
                     fail_silently=False,
@@ -297,6 +308,14 @@ def reset_password_confirm(request, uidb64, token):
                 new_password = form.cleaned_data['new_password1']
                 user.set_password(new_password)
                 user.save()
+                # Send email notification
+                send_mail(
+                    'Contraseña Reestablecida Correctamente',
+                    'Su contraseña ha sido reestablecida.',
+                    settings.EMAIL_HOST_USER,
+                    [user.email],
+                    fail_silently=False,
+                )
                 return redirect('signin')
             else:
                 return render(request, 'reset_password_confirm.html', {'form': form})

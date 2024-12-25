@@ -45,7 +45,7 @@ class Item(models.Model):
     list = models.ForeignKey(List, on_delete=models.CASCADE)
     added_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='added_items')
     name = models.CharField(max_length=40)
-    description = models.CharField(max_length=256)
+    description = models.CharField(max_length=256, blank=True, null=True)
     added_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self): #method to display the title when a record is shown, for example in the admin panel

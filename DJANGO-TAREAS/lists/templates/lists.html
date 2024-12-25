@@ -15,7 +15,7 @@
                 <option value="collaborator" {% if filter_type == 'collaborator' %}selected{% endif %}>Colaborador</option>
             </select>
             <button type="submit" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">Buscar</button>
-            <a href="{% url 'lists' %}" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Clear</a>
+            <a href="{% url 'lists' %}" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Limpiar Búsqueda</a>
         </div>
     </form>
     <div class="flex items-center space-x-4 mb-6">
@@ -29,6 +29,12 @@
         </div>
     </div>
     <div class="space-y-4" id="lists-container">
+        {% if lists|length == 0 %}
+            <div class="text-center py-4">
+                <p class="text-gray-600 mb-4">No tienes listas creadas ni en colaboración. ¡Comienza creando una lista!</p>
+                <a href="{% url 'create_list' %}" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">Crear tu primera lista</a>
+            </div>
+        {% else %}
         {% for list in lists %}
         <div class="bg-white rounded-lg shadow-md p-4 flex items-center space-x-4 cursor-pointer transform transition-transform hover:scale-105 w-full" onclick="location.href='{% url 'list_details' list.id %}'">
             <div class="flex-shrink-0">
@@ -43,14 +49,18 @@
                 <p class="text-gray-600">{{ list.description|truncatechars:80 }}</p>
             </div>
             <div class="flex space-x-2">
-                {% for collaborator in list.collaborators.all %}
-                <a href="{% url 'user_details' collaborator.username %}" title="{{collaborator.username}}">
-                    <img src="../media/{{ collaborator.profile.pic }}" class="rounded-full w-10 h-10" alt="{{collaborator.username}}">
+                {% for collaborator in list.collaborators.all|slice:":3" %}
+                <a href="{% url 'user_details' collaborator.username %}" title="{{ collaborator.username }}">
+                    <img src="../media/{{ collaborator.profile.pic }}" class="rounded-full w-10 h-10" alt="{{ collaborator.username }}">
                 </a>
                 {% endfor %}
+                {% if list.collaborators.count > 3 %}
+                <span class="rounded-full w-10 h-10 bg-gray-200 flex items-center justify-center text-gray-600">+{{ list.collaborators.count|add:"-3" }}</span>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
+        {% endif %}
     </div>
     <div id="loading" class="text-center py-4 hidden">Cargando...</div>
     {% if lists.has_next %}
@@ -99,11 +109,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         <p class="text-gray-600">${list.description.length > 80 ? list.description.substring(0, list.description.lastIndexOf(' ', 80)) + '...' : list.description}</p>
                     </div>
                     <div class="flex space-x-2">
-                        ${list.collaborators.map(collaborator => `
-                            <a href="/users/${collaborator.username}/" title="${collaborator.username}">
-                                <img src="${collaborator.profile_pic}" class="rounded-full w-10 h-10" alt="${collaborator.username}">
-                            </a>
-                        `).join('')}
+                        ${list.collaborators.slice(0, 3).map(collaborator => `
+                        <a href="/users/${collaborator.username}/" title="${collaborator.username}">
+                            <img src="${collaborator.profile_pic}" class="rounded-full w-10 h-10" alt="${collaborator.username}">
+                        </a>`).join('')}
+                        ${list.collaborators.length > 3 ? `
+                        <span class="rounded-full w-10 h-10 bg-gray-200 flex items-center justify-center text-gray-600">+${list.collaborators.length - 3}</span>` : ''}
                     </div>
                 `;
                 listsContainer.appendChild(listElement);

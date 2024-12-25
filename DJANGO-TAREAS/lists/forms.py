@@ -1,4 +1,4 @@
-from django.forms import ModelForm, TextInput, CheckboxInput
+from django.forms import ModelForm, TextInput, CheckboxInput, Select
 from .models import List, Item, Tag
 
 class ListForm(ModelForm):
@@ -17,7 +17,7 @@ class NewItemForm(ModelForm):
         fields = ['name', 'description']
         widgets = {
             'name': TextInput(attrs={'placeholder': 'Nombre del item', 'class': 'w-full p-2 border rounded'}),
-            'description': TextInput(attrs={'placeholder': 'Descripción', 'class': 'w-full p-2 border rounded'}),
+            'description': TextInput(attrs={'placeholder': 'Descripción (opcional)', 'class': 'w-full p-2 border rounded'}),
         }
 
 class ModifyListForm(ModelForm):
@@ -36,7 +36,7 @@ class ModifyItemForm(ModelForm):
         fields = ['name', 'description']
         widgets = {
             'name': TextInput(attrs={'placeholder': 'Nombre del item', 'class': 'w-full p-2 border rounded'}),
-            'description': TextInput(attrs={'placeholder': 'Descripción', 'class': 'w-full p-2 border rounded'}),
+            'description': TextInput(attrs={'placeholder': 'Descripción (opcional)', 'class': 'w-full p-2 border rounded'}),
         }
 
 class AddTagForm(ModelForm):
@@ -45,5 +45,14 @@ class AddTagForm(ModelForm):
         fields = ['name', 'color']
         widgets = {
             'name': TextInput(attrs={'placeholder': 'Nombre del tag', 'class': 'w-full p-2 border rounded'}),
-            'color': TextInput(attrs={'type': 'color', 'class': 'w-full p-2 border rounded'}),
+            'color': Select(choices=[
+                ('#FF0000', 'Rojo'),
+                ('#00FF00', 'Verde'),
+                ('#0000FF', 'Azul'),
+                ('#FFFF00', 'Amarillo'),
+                ('#FFA500', 'Naranja'),
+                ('#FF80FF', 'Rosa'),
+                ('#800080', 'Morado'),
+                ('#00FFFF', 'Cian')
+            ], attrs={'class': 'w-full p-2 border rounded', 'style': 'background-color: var(--color); color: var(--text-color);'}),
         }

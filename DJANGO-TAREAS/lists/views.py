@@ -248,6 +248,8 @@ def modify_list(request, list_id):
                     modified_list.name = form.cleaned_data['name']  # Actualiza el nombre
                     modified_list.description = form.cleaned_data['description']  # Actualiza la descripción
                     modified_list.save()  # Guarda finalmente en la base de datos
+                    modified_list.is_public = form.cleaned_data['is_public']  # Actualiza el estado público/privado
+                    modified_list.save()  # Guarda finalmente en la base de datos
                     return redirect(f'/lists/{list_id}/')
             except Exception as e:
                 return render(request, 'modify_list.html', {
@@ -321,6 +323,8 @@ def modify_item(request, list_id, item_id):
                     modified_item = form.save(commit=False)  
                     modified_item.last_modified = timezone.now()
                     modified_item.modified_by = request.user  
+                    if not modified_item.description:
+                        modified_item.description = ""
                     modified_item.save()  
                     return redirect(f'/lists/{list_id}/')
                 else:
@@ -332,10 +336,6 @@ def modify_item(request, list_id, item_id):
                     })
             except Exception as e:
                 return HttpResponse(f"Error modifiying the list: {str(e)}", status=500)
-                # return render(request, 'modify_list.html', {
-                # 'form': ModifyItemForm,
-                # 'error': "Error al modificar la lista"
-                # })  
     else:
         raise Http404
 
@@ -651,3 +651,24 @@ def get_list_details(request, list_id):
         'tags': tags_data
     }
     return JsonResponse(list_data)
+
+@login_required
+def get_collaborators(request, list_id):
+    """
+    Fetch and return the list of collaborators for a specific list.
+    Args:
+        request (HttpRequest): The HTTP request object.
+        list_id (int): The ID of the list.
+    Returns:
+        JsonResponse: Returns the list of collaborators with their usernames and profile pictures.
+    """
+    list_obj = get_object_or_404(List, pk=list_id)
+    collaborators = list_obj.collaborators.all()
+    collaborators_data = [
+        {
+            'username': collaborator.username,
+            'profile_pic': collaborator.profile.pic.url if collaborator.profile.pic else ''
+        }
+        for collaborator in collaborators
+    ]
+    return JsonResponse({'collaborators': collaborators_data})

@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mx-auto py-10 flex justify-center items-center min-h-screen">
+<div class="container mx-auto py-6 flex justify-center items-center ">
     <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-md">
-        <h2 class="text-[#0e141b] text-2xl font-bold mb-4">Sign Up</h2>
+        <h2 class="text-[#0e141b] text-2xl font-bold mb-4">Registro de Usuario</h2>
         <p class="text-red-600 mb-4">{{error}}</p>
         <form action="/signup/" method="POST">
             {% csrf_token %}
             {{form.as_p}}
-            <button class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg w-full">Sign Up</button>
+            <button class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg w-full">Crear Cuenta</button>
         </form>
         <div class="mt-4 text-center">
             <p class="text-[#0e141b]">¿Ya tienes cuenta? <a href="{% url 'signin' %}" class="text-[#1980e6]">Inicia sesión</a></p>

@@ -12,12 +12,12 @@
         <div>
             <h2 class="text-3xl font-bold mb-2">{{ list.name }}</h2>
             <p class="text-gray-600 text-sm">Creada el {{ list.created_on|date:"d/m/Y" }} por {{list.creator}}</p>
-            <p>Detalles: {{list.description}}</p>
+            <p>{{list.description}}</p>
         </div>
         {% if request.user == list.creator or request.user in list.collaborators.all %}
         <div class="flex gap-2">
             <a class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center" href="#" id="share-list-button">
-                Compartir
+                Invitar Colaboradores
             </a>
             <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg" id="toggle-admin-panel">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -41,14 +41,43 @@
         {% endif %}
     </div>
 
+    
     <div id="add-tag-form" class="hidden mb-6">
         <form action="/lists/{{list.id}}/add_tag/" method="post" class="flex items-center gap-2">
             {% csrf_token %}
             <input type="text" name="name" placeholder="Nombre del Tag" class="border rounded px-2 py-1">
-            <input type="color" name="color" class="border rounded px-2 py-1">
+            <select name="color" class="border rounded px-2 py-1">
+                <option value="#FF0000" style="background-color: #FF0000; color: white;">Rojo</option>
+                <option value="#00FF00" style="background-color: #00FF00; color: black;">Verde</option>
+                <option value="#0000FF" style="background-color: #0000FF; color: white;">Azul</option>
+                <option value="#FFFF00" style="background-color: #FFFF00; color: black;">Amarillo</option>
+                <option value="#FFA500" style="background-color: #FFA500; color: black;">Naranja</option>
+                <option value="#FFC0CB" style="background-color: #FF80FF; color: black;">Rosa</option>
+                <option value="#800080" style="background-color: #800080; color: white;">Morado</option>
+                <option value="#00FFFF" style="background-color: #00FFFF; color: black;">Cian</option>
+            </select>
             <button type="submit" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">Añadir</button>
         </form>
     </div>
+
+    <div class="mb-6">
+        <h3 class="text-lg font-bold mb-2">Colaboradores</h3>
+        <div class="flex items-center space-x-2">
+            {% if list.collaborators.count == 0 %}
+                <span class="text-gray-500 italic">Aún no hay colaboradores</span>
+            {% else %}
+                {% for collaborator in list.collaborators.all|slice:":5" %}
+                    <a href="{% url 'user_details' collaborator.username %}" title="{{ collaborator.username }}">
+                        <img src="{{ collaborator.profile.pic.url }}" class="rounded-full w-10 h-10" alt="{{ collaborator.username }}">
+                    </a>
+                {% endfor %}
+                {% if list.collaborators.count > 5 %}
+                    <span class="rounded-full w-10 h-10 bg-gray-200 flex items-center justify-center text-gray-600 cursor-pointer" id="more-collaborators">+{{ list.collaborators.count|add:"-5" }}</span>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
 
     <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-6" id="items-container">
         <table class="table-auto w-full text-left">
@@ -69,7 +98,7 @@
                             <input type="text" name="name" placeholder="Nombre" class="w-full border rounded px-2 py-1">
                         </td>
                         <td class="px-6 py-4 text-gray-800">
-                            <input type="text" name="description" placeholder="Breve Descripción" class="w-full border rounded px-2 py-1">
+                            <input type="text" name="description" placeholder="Breve Descripción (opcional)" class="w-full border rounded px-2 py-1">
                         </td>
                         <td class="px-6 py-4 text-gray-800">
                             
@@ -87,7 +116,7 @@
                     {% for item in items %}
                         <tr id="item-row-{{ item.id }}" class="border-t hover:bg-gray-50">
                             <td class="px-6 py-4 text-gray-800">{{ item.name }}</td>
-                            <td class="px-6 py-4 text-gray-800">{{ item.description|default:"" }}</td>
+                            <td class="px-6 py-4 text-gray-800">{{ item.description|default_if_none:"" }}</td>
                             <td class="px-6 py-4 text-gray-800">
                                 <a href="{% url 'user_details' item.added_by.username %}" class="flex items-center">
                                     <img src="{{ item.added_by.profile.pic.url }}" class="w-8 h-8 rounded-full mr-2" alt="{{item.added_by.username}}">
@@ -123,7 +152,7 @@
                                     <input type="text" name="name" value="{{ item.name }}" class="w-full border rounded px-2 py-1">
                                 </td>
                                 <td class="px-6 py-4 text-gray-800">
-                                    <input type="text" name="description" value="{{ item.description }}" class="w-full border rounded px-2 py-1">
+                                    <input type="text" name="description" value="{{ item.description|default_if_none:"" }}" class="w-full border rounded px-2 py-1">
                                 </td>
                                 <td class="px-6 py-4 text-gray-800">
                                    
@@ -178,6 +207,13 @@
                     </button>
                 </form>
             </div>
+        {% elif request.user in list.collaborators.all %}
+            <form method="POST" action="{% url 'leave_list' list_id=list.id %}" onsubmit="return confirmSend(event, this, '¿Quieres dejar de colaborar en esta lista?')">
+                {% csrf_token %}
+                <button type="submit" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-semibold py-2 px-4 rounded-lg">
+                    Dejar de Colaborar
+                </button>
+            </form>
         {% else %}
             <p class="text-red-600">No tienes permisos para realizar esta acción</p>
         {% endif %}
@@ -301,6 +337,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <form id="modify-list-form">
                             <input type="text" name="name" value="${data.name}" class="w-full border rounded px-2 py-1 mb-2" placeholder="Nombre de la Lista">
                             <textarea name="description" class="w-full border rounded px-2 py-1 mb-2" placeholder="Descripción">${data.description}</textarea>
+                            <div class="flex items-center mb-2">
+                                <input type="checkbox" name="is_public" id="is_public" ${data.is_public ? 'checked' : ''}>
+                                <label for="is_public" class="ml-2">Lista Pública</label>
+                            </div>
                             <div id="tags-container">${tagsHtml}</div>
                             <button type="submit" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Guardar Cambios</button>
                         </form>
@@ -367,6 +407,33 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     };
+
+    const moreCollaboratorsButton = document.getElementById('more-collaborators');
+    if (moreCollaboratorsButton) {
+        moreCollaboratorsButton.addEventListener('click', function() {
+            fetch("{% url 'get_collaborators' list_id=list.id %}")
+                .then(response => response.json())
+                .then(data => {
+                    let collaboratorsHtml = '';
+                    data.collaborators.forEach(collaborator => {
+                        collaboratorsHtml += `
+                            <div class="flex items-center mb-2">
+                                <img src="${collaborator.profile_pic}" class="rounded-full w-10 h-10 mr-2" alt="${collaborator.username}">
+                                <span>${collaborator.username}</span>
+                            </div>
+                        `;
+                    });
+
+                    Swal.fire({
+                        title: 'Colaboradores',
+                        html: collaboratorsHtml,
+                        showCloseButton: true,
+                        focusConfirm: false,
+                        confirmButtonText: 'Cerrar'
+                    });
+                });
+        });
+    }
 });
 </script>
 {% endblock %}

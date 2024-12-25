@@ -1,10 +1,7 @@
 Falta añadir las funcionalidades de:
 
-    Mejorar navegación
 
     Añadir validaciones
-
-    Al expulsar un usuario de la lista, se pregunta si se desea eliminar o conservar todo lo que este ha añadido
 
     Hacer Web progresiva
 
@@ -14,21 +11,9 @@ Falta añadir las funcionalidades de:
 
     Añadir función para que el admin pueda editar items de colaboradores
     Añadir popup cuando cambies la contraseña
-
-    Arreglar el botón de Mostrar Panel de Administración que no funciona cuando eres colaborador debido a que no se muestra el botón de manage-items o manage-tasks
-
-    Descripción obligatoria para los item?
-    Comprobar colores de los tags
-    Dificultad para borrar un tag
-    Mostrar quiénes son colaboradores dr una lista 
-    Eliminar descripción obligatoria de profile settings 
-    Mensaje cuando el usuario no tenga ninguna lista para que cree una 
-    Añadir is_public al formulario de modificar detalles de lista
+ 
+  
     Poner en el formulario de cambiar contraseña estando logueado pedir la contraseña actual, y si no se acuerda, poner un enlace para reestablecer la contraseña
     Añadir un correo diciendo que la activación de la cuenta esta realizada.
     ARREGLAR CARGAR ERROR EN LIST_DETAILS
-    
 
-POSIBLES FUNCIONALIDADES:
-
-    -Añadir Breadcrumb?
