@@ -17,7 +17,7 @@
         {% if request.user == list.creator or request.user in list.collaborators.all %}
         <div class="flex gap-2">
             <a class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center" href="#" id="share-list-button">
-                Invitar Colaboradores
+                Invitar
             </a>
             <button class="bg-gray-100 hover:bg-gray-200 p-2 rounded-lg" id="toggle-admin-panel">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -41,142 +41,194 @@
         {% endif %}
     </div>
 
-    
     <div id="add-tag-form" class="hidden mb-6">
         <form action="/lists/{{list.id}}/add_tag/" method="post" class="flex items-center gap-2">
             {% csrf_token %}
             <input type="text" name="name" placeholder="Nombre del Tag" class="border rounded px-2 py-1">
-            <select name="color" class="border rounded px-2 py-1">
-                <option value="#FF0000" style="background-color: #FF0000; color: white;">Rojo</option>
-                <option value="#00FF00" style="background-color: #00FF00; color: black;">Verde</option>
-                <option value="#0000FF" style="background-color: #0000FF; color: white;">Azul</option>
-                <option value="#FFFF00" style="background-color: #FFFF00; color: black;">Amarillo</option>
-                <option value="#FFA500" style="background-color: #FFA500; color: black;">Naranja</option>
-                <option value="#FFC0CB" style="background-color: #FF80FF; color: black;">Rosa</option>
-                <option value="#800080" style="background-color: #800080; color: white;">Morado</option>
-                <option value="#00FFFF" style="background-color: #00FFFF; color: black;">Cian</option>
-            </select>
+            <input type="color" name="color" class="border rounded px-2 py-1">
             <button type="submit" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">Añadir</button>
         </form>
     </div>
 
-    <div class="mb-6">
-        <h3 class="text-lg font-bold mb-2">Colaboradores</h3>
-        <div class="flex items-center space-x-2">
-            {% if list.collaborators.count == 0 %}
-                <span class="text-gray-500 italic">Aún no hay colaboradores</span>
-            {% else %}
-                {% for collaborator in list.collaborators.all|slice:":5" %}
-                    <a href="{% url 'user_details' collaborator.username %}" title="{{ collaborator.username }}">
-                        <img src="{{ collaborator.profile.pic.url }}" class="rounded-full w-10 h-10" alt="{{ collaborator.username }}">
-                    </a>
-                {% endfor %}
-                {% if list.collaborators.count > 5 %}
-                    <span class="rounded-full w-10 h-10 bg-gray-200 flex items-center justify-center text-gray-600 cursor-pointer" id="more-collaborators">+{{ list.collaborators.count|add:"-5" }}</span>
-                {% endif %}
-            {% endif %}
-        </div>
-    </div>
-
-
     <div class="bg-white shadow-sm rounded-lg overflow-hidden mb-6" id="items-container">
-        <table class="table-auto w-full text-left">
-            <thead>
-                <tr class="bg-gray-50">
-                    <th class="px-6 py-3 text-sm font-semibold text-gray-700">Item</th>
-                    <th class="px-6 py-3 text-sm font-semibold text-gray-700">Descripción</th>
-                    <th class="px-6 py-3 text-sm font-semibold text-gray-700">Añadido por</th>
-                    <th class="px-6 py-3 text-sm font-semibold text-gray-700">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="border-t hover:bg-gray-50">
+        <div class="hidden sm:block">
+            <table class="table-auto w-full text-left">
+                <thead>
+                    <tr class="bg-gray-50">
+                        <th class="px-6 py-3 text-sm font-semibold text-gray-700">Item</th>
+                        <th class="px-6 py-3 text-sm font-semibold text-gray-700">Descripción</th>
+                        <th class="px-6 py-3 text-sm font-semibold text-gray-700">Añadido por</th>
+                        <th class="px-6 py-3 text-sm font-semibold text-gray-700">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-t hover:bg-gray-50">
+                        <!-- Add item form -->
+                        <form action="/lists/{{list.id}}/add_item/" method="post">
+                            {% csrf_token %}
+                            <td class="px-6 py-4 text-gray-800">
+                                <input type="text" name="name" placeholder="Nombre" class="w-full border rounded px-2 py-1">
+                            </td>
+                            <td class="px-6 py-4 text-gray-800">
+                                <input type="text" name="description" placeholder="Breve Descripción" class="w-full border rounded px-2 py-1">
+                            </td>
+                            <td class="px-6 py-4 text-gray-800">
+                                
+                            </td>
+                            <td class="px-6 py-4 text-gray-800"><button type="submit" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">+</button></td>
+                        </form>
+                    </tr>
+                    {% if items|length == 0 %}
+                        <tr>
+                            <td colspan="4" class="px-6 py-4 text-gray-500 text-center italic">
+                                ¡Añade tu primer item!
+                            </td>
+                        </tr>
+                    {% else %}
+                        {% for item in items %}
+                            <tr id="item-row-{{ item.id }}" class="border-t hover:bg-gray-50">
+                                <td class="px-6 py-4 text-gray-800">{{ item.name }}</td>
+                                <td class="px-6 py-4 text-gray-800">{{ item.description|default:"" }}</td>
+                                <td class="px-6 py-4 text-gray-800">
+                                    <a href="{% url 'user_details' item.added_by.username %}" class="flex items-center">
+                                        <img src="{{ item.added_by.profile.pic.url }}" class="w-8 h-8 rounded-full mr-2" alt="{{item.added_by.username}}">
+                                        
+                                    </a>
+                                </td>
+                                <td class="px-6 py-4 text-gray-800">
+                                    <div class="flex gap-2">
+                                        {% if item.added_by == request.user %}
+                                            <button class="bg-yellow-600 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center" title="Editar" onclick="showModifyForm({{ item.id }})">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                </svg>
+                                            </button>
+                                        {% endif %}
+                                        {% if item.added_by == request.user or list.creator == request.user %}
+                                            <form class="inline-block" action="{% url 'delete_item' list_id=list.id item_id=item.id %}" method="post" onsubmit="return confirmSend(event, this, '¿Quieres eliminar este item?')">
+                                                {% csrf_token %}
+                                                <button class="bg-red-600 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center" title="Borrar">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr id="modify-form-{{ item.id }}" class="hidden border-t hover:bg-gray-50">
+                                <form action="{% url 'modify_item' list_id=list.id item_id=item.id %}" method="post">
+                                    {% csrf_token %}
+                                    <td class="px-6 py-4 text-gray-800">
+                                        <input type="text" name="name" value="{{ item.name }}" class="w-full border rounded px-2 py-1">
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-800">
+                                        <input type="text" name="description" value="{{ item.description }}" class="w-full border rounded px-2 py-1">
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-800">
+                                       
+                                    </td>
+                                    <td class="px-6 py-4 text-gray-800">
+                                        <div class="flex gap-2">
+                                            <button type="submit" class="bg-green-500 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center" title="Guardar cambios">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1.707-7.707a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-1.5-1.5a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                            <button type="button" class="bg-red-500 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center" onclick="hideModifyForm({{ item.id }})" title="Descartar cambios">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-10.707a1 1 0 00-1.414-1.414L10 8.586 7.707 6.293a1 1 0 00-1.414 1.414L8.586 10l-2.293 2.293a1 1 0 001.414 1.414L10 11.414l2.293 2.293a1 1 0 001.414-1.414L11.414 10l2.293-2.293z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </form>
+                            </tr>
+                        {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+        <div class="block sm:hidden">
+            <div class="space-y-4">
+                <div class="border-t hover:bg-gray-50 p-4">
                     <!-- Add item form -->
                     <form action="/lists/{{list.id}}/add_item/" method="post">
                         {% csrf_token %}
-                        <td class="px-6 py-4 text-gray-800">
+                        <div class="mb-2">
                             <input type="text" name="name" placeholder="Nombre" class="w-full border rounded px-2 py-1">
-                        </td>
-                        <td class="px-6 py-4 text-gray-800">
-                            <input type="text" name="description" placeholder="Breve Descripción (opcional)" class="w-full border rounded px-2 py-1">
-                        </td>
-                        <td class="px-6 py-4 text-gray-800">
-                            
-                        </td>
-                        <td class="px-6 py-4 text-gray-800"><button type="submit" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">+</button></td>
+                        </div>
+                        <div class="mb-2">
+                            <input type="text" name="description" placeholder="Breve Descripción" class="w-full border rounded px-2 py-1">
+                        </div>
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">+</button>
+                        </div>
                     </form>
-                </tr>
+                </div>
                 {% if items|length == 0 %}
-                    <tr>
-                        <td colspan="4" class="px-6 py-4 text-gray-500 text-center italic">
-                            ¡Añade tu primer item!
-                        </td>
-                    </tr>
+                    <div class="text-gray-500 text-center italic">
+                        ¡Añade tu primer item!
+                    </div>
                 {% else %}
                     {% for item in items %}
-                        <tr id="item-row-{{ item.id }}" class="border-t hover:bg-gray-50">
-                            <td class="px-6 py-4 text-gray-800">{{ item.name }}</td>
-                            <td class="px-6 py-4 text-gray-800">{{ item.description|default_if_none:"" }}</td>
-                            <td class="px-6 py-4 text-gray-800">
+                        <div id="item-info-{{ item.id }}" class="border-t hover:bg-gray-50 p-4">
+                            <div class="mb-2 text-gray-800 font-bold">{{ item.name }}</div>
+                            <div class="mb-2 text-gray-800">{{ item.description|default:"" }}</div>
+                            <div class="mb-2 text-gray-800">
                                 <a href="{% url 'user_details' item.added_by.username %}" class="flex items-center">
                                     <img src="{{ item.added_by.profile.pic.url }}" class="w-8 h-8 rounded-full mr-2" alt="{{item.added_by.username}}">
                                     
                                 </a>
-                            </td>
-                            <td class="px-6 py-4 text-gray-800">
-                                <div class="flex gap-2">
-                                    {% if item.added_by == request.user %}
-                                        <button class="bg-yellow-600 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center" title="Editar" onclick="showModifyForm({{ item.id }})">
+                            </div>
+                            <div class="flex gap-2">
+                                {% if item.added_by == request.user %}
+                                    <button class="bg-yellow-600 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center" title="Editar" onclick="showModifyForm({{ item.id }})">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                        </svg>
+                                    </button>
+                                {% endif %}
+                                {% if item.added_by == request.user or list.creator == request.user %}
+                                    <form class="inline-block" action="{% url 'delete_item' list_id=list.id item_id=item.id %}" method="post" onsubmit="return confirmSend(event, this, '¿Quieres eliminar este item?')">
+                                        {% csrf_token %}
+                                        <button class="bg-red-600 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center" title="Borrar">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
                                             </svg>
                                         </button>
-                                    {% endif %}
-                                    {% if item.added_by == request.user or list.creator == request.user %}
-                                        <form class="inline-block" action="{% url 'delete_item' list_id=list.id item_id=item.id %}" method="post" onsubmit="return confirmSend(event, this, '¿Quieres eliminar este item?')">
-                                            {% csrf_token %}
-                                            <button class="bg-red-600 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center" title="Borrar">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
-                                                </svg>
-                                            </button>
-                                        </form>
-                                    {% endif %}
-                                </div>
-                            </td>
-                        </tr>
-                        <tr id="modify-form-{{ item.id }}" class="hidden border-t hover:bg-gray-50">
+                                    </form>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div id="modify-form-{{ item.id }}-sm" class="hidden border-t hover:bg-gray-50 p-4">
                             <form action="{% url 'modify_item' list_id=list.id item_id=item.id %}" method="post">
                                 {% csrf_token %}
-                                <td class="px-6 py-4 text-gray-800">
+                                <div class="mb-2">
                                     <input type="text" name="name" value="{{ item.name }}" class="w-full border rounded px-2 py-1">
-                                </td>
-                                <td class="px-6 py-4 text-gray-800">
-                                    <input type="text" name="description" value="{{ item.description|default_if_none:"" }}" class="w-full border rounded px-2 py-1">
-                                </td>
-                                <td class="px-6 py-4 text-gray-800">
-                                   
-                                </td>
-                                <td class="px-6 py-4 text-gray-800">
-                                    <div class="flex gap-2">
-                                        <button type="submit" class="bg-green-500 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center" title="Guardar cambios">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1.707-7.707a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-1.5-1.5a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                            </svg>
-                                        </button>
-                                        <button type="button" class="bg-red-500 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center" onclick="hideModifyForm({{ item.id }})" title="Descartar cambios">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-10.707a1 1 0 00-1.414-1.414L10 8.586 7.707 6.293a1 1 0 00-1.414 1.414L8.586 10l-2.293 2.293a1 1 0 001.414 1.414L10 11.414l2.293 2.293a1 1 0 001.414-1.414L11.414 10l2.293-2.293z" clip-rule="evenodd" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </td>
+                                </div>
+                                <div class="mb-2">
+                                    <input type="text" name="description" value="{{ item.description }}" class="w-full border rounded px-2 py-1">
+                                </div>
+                                <div class="flex gap-2">
+                                    <button type="submit" class="bg-green-500 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center" title="Guardar cambios">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1.707-7.707a1 1 0 011.414 0L10 11.586l2.293-2.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-1.5-1.5a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    <button type="button" class="bg-red-500 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center" onclick="hideModifyForm({{ item.id }})" title="Descartar cambios">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-10.707a1 1 0 00-1.414-1.414L10 8.586 7.707 6.293a1 1 0 00-1.414 1.414L8.586 10l-2.293 2.293a1 1 0 001.414 1.414L10 11.414l2.293 2.293a1 1 0 001.414-1.414L11.414 10l2.293-2.293z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </form>
-                        </tr>
+                        </div>
                     {% endfor %}
                 {% endif %}
-            </tbody>
-        </table>
+            </div>
+        </div>
     </div>
 
     <div id="admin-panel" class="hidden bg-white shadow-sm rounded-lg p-6">
@@ -207,13 +259,6 @@
                     </button>
                 </form>
             </div>
-        {% elif request.user in list.collaborators.all %}
-            <form method="POST" action="{% url 'leave_list' list_id=list.id %}" onsubmit="return confirmSend(event, this, '¿Quieres dejar de colaborar en esta lista?')">
-                {% csrf_token %}
-                <button type="submit" class="w-full bg-red-100 hover:bg-red-200 text-red-800 font-semibold py-2 px-4 rounded-lg">
-                    Dejar de Colaborar
-                </button>
-            </form>
         {% else %}
             <p class="text-red-600">No tienes permisos para realizar esta acción</p>
         {% endif %}
@@ -249,11 +294,15 @@ document.addEventListener('DOMContentLoaded', function() {
     window.showModifyForm = function(itemId) {
         document.getElementById('item-row-' + itemId).classList.add('hidden');
         document.getElementById('modify-form-' + itemId).classList.remove('hidden');
+        document.getElementById('item-info-' + itemId).classList.add('hidden');
+        document.getElementById('modify-form-' + itemId + '-sm').classList.remove('hidden');
     };
 
     window.hideModifyForm = function(itemId) {
         document.getElementById('item-row-' + itemId).classList.remove('hidden');
         document.getElementById('modify-form-' + itemId).classList.add('hidden');
+        document.getElementById('item-info-' + itemId).classList.remove('hidden');
+        document.getElementById('modify-form-' + itemId + '-sm').classList.add('hidden');
     };
 
     window.confirmSend = function(event, form, message) {
@@ -281,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 Swal.fire({
-                    title: 'Compartir Lista',
+                    title: 'Invita colaboradores',
                     html: `
                         <div class="flex justify-center mb-4">
                             <button onclick="copyToClipboard('${data.share_url}')" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition duration-200">
@@ -338,9 +387,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             <input type="text" name="name" value="${data.name}" class="w-full border rounded px-2 py-1 mb-2" placeholder="Nombre de la Lista">
                             <textarea name="description" class="w-full border rounded px-2 py-1 mb-2" placeholder="Descripción">${data.description}</textarea>
                             <div class="flex items-center mb-2">
-                                <input type="checkbox" name="is_public" id="is_public" ${data.is_public ? 'checked' : ''}>
-                                <label for="is_public" class="ml-2">Lista Pública</label>
+                                <input type="checkbox" name="is_public" id="is_public" ${data.is_public ? 'checked' : ''} class="mr-2">
+                                <label for="is_public">Lista Pública</label>
                             </div>
+                            <p class="text-red-600 text-sm mb-2">Advertencia: Cualquier usuario podrá ver la lista y su contenido si esta es pública.</p>
                             <div id="tags-container">${tagsHtml}</div>
                             <button type="submit" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Guardar Cambios</button>
                         </form>
@@ -407,33 +457,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     };
-
-    const moreCollaboratorsButton = document.getElementById('more-collaborators');
-    if (moreCollaboratorsButton) {
-        moreCollaboratorsButton.addEventListener('click', function() {
-            fetch("{% url 'get_collaborators' list_id=list.id %}")
-                .then(response => response.json())
-                .then(data => {
-                    let collaboratorsHtml = '';
-                    data.collaborators.forEach(collaborator => {
-                        collaboratorsHtml += `
-                            <div class="flex items-center mb-2">
-                                <img src="${collaborator.profile_pic}" class="rounded-full w-10 h-10 mr-2" alt="${collaborator.username}">
-                                <span>${collaborator.username}</span>
-                            </div>
-                        `;
-                    });
-
-                    Swal.fire({
-                        title: 'Colaboradores',
-                        html: collaboratorsHtml,
-                        showCloseButton: true,
-                        focusConfirm: false,
-                        confirmButtonText: 'Cerrar'
-                    });
-                });
-        });
-    }
 });
 </script>
 {% endblock %}

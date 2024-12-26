@@ -30,7 +30,7 @@ class List(models.Model):
         __str__: Returns a string representation of the list, including its name and the username of its creator.
     """
     name = models.CharField(max_length=50)
-    description = models.CharField(max_length=256)
+    description = models.CharField(max_length=256, blank=True, null=True)
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="created_lists")
     created_on = models.DateTimeField(auto_now_add=True)
     collaborators = models.ManyToManyField(User, related_name="collaborated_lists", blank=True)

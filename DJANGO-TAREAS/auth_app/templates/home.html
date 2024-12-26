@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-    <div class="max-w-5xl mx-auto py-10">
+    <div class="max-w-5xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
         <div class="bg-cover bg-center bg-no-repeat rounded-xl p-10" style='background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%), url("https://cdn.usegalileo.ai/sdxl10/c2db0b58-24e4-471c-8076-fe46520bbb4c.png");'>
             {% if user.is_authenticated %}
                 <h1 class="text-white text-4xl font-black mb-4">Bienvenido a Listopia, {{ user }}</h1>
@@ -9,14 +9,17 @@
                 <h1 class="text-white text-4xl font-black mb-4">Bienvenido a Listopia</h1>
             {% endif %}
             <p class="text-white text-lg mb-6">¡Crea listas de lo que quieras!</p>
-            <a href="{% url 'create_list' %}" class="bg-[#1980e6] text-white font-bold py-4 px-8 rounded-xl text-lg hover:bg-[#0e6bb8] transition duration-300">Comienza creando una lista</a>
+            <a href="{% url 'create_list' %}" class="bg-[#1980e6] text-white font-bold py-4 px-8 rounded-xl text-lg sm:text-base sm:py-2 sm:px-4 hover:bg-[#0e6bb8] transition duration-300">
+                <span class="hidden sm:inline">Comienza creando una lista</span>
+                <span class="inline sm:hidden">Crear lista</span>
+            </a>
         </div>
        
         <h2 class="text-[#0e141b] text-2xl font-bold mt-10 mb-4">Echa un vistazo a las últimas listas publicadas por otros usuarios</h2>
-        <div class="flex items-center space-x-4 mb-4">
+        <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-4">
             <input type="text" id="search-bar" class="form-input flex-grow bg-[#e7edf3] text-[#0e141b] placeholder-[#4e7397] rounded-xl px-4 py-2" placeholder="Buscar listas...">
         </div>
-        <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="public-lists">
+        <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="public-lists">
             <!-- Lists will be loaded here via AJAX -->
         </ul>
         <div class="text-center mt-6">

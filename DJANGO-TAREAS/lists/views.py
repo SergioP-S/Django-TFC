@@ -244,12 +244,10 @@ def modify_list(request, list_id):
             try:
                 form = ModifyListForm(request.POST, instance=list)
                 if form.is_valid():
-                    modified_list = form.save(commit=False)  # No se guarda aún en la base de datos
-                    modified_list.name = form.cleaned_data['name']  # Actualiza el nombre
-                    modified_list.description = form.cleaned_data['description']  # Actualiza la descripción
-                    modified_list.save()  # Guarda finalmente en la base de datos
-                    modified_list.is_public = form.cleaned_data['is_public']  # Actualiza el estado público/privado
-                    modified_list.save()  # Guarda finalmente en la base de datos
+                    modified_list = form.save(commit=False)
+                    modified_list.is_public = form.cleaned_data['is_public']
+                    modified_list.description = form.cleaned_data['description'] or ""
+                    modified_list.save()
                     return redirect(f'/lists/{list_id}/')
             except Exception as e:
                 return render(request, 'modify_list.html', {
@@ -648,6 +646,7 @@ def get_list_details(request, list_id):
     list_data = {
         'name': list_obj.name,
         'description': list_obj.description,
+        'is_public': list_obj.is_public,
         'tags': tags_data
     }
     return JsonResponse(list_data)

@@ -7,15 +7,21 @@
         <a href="{% url 'create_list' %}" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">Nueva Lista</a>
     </div>
     <form method="GET" action="{% url 'lists' %}" class="mb-6">
-        <div class="flex items-center space-x-4">
+        <div class="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
             <input type="text" name="search" placeholder="Buscar listas..." value="{{ search_query }}" class="form-input flex-grow bg-[#e7edf3] text-[#0e141b] placeholder-[#4e7397] rounded-xl px-4 py-2">
-            <select name="filter" class="form-select bg-[#e7edf3] text-[#0e141b] rounded-xl px-7 py-2">
-                <option value="both" {% if filter_type == 'both' %}selected{% endif %}>Ambas</option>
-                <option value="creator" {% if filter_type == 'creator' %}selected{% endif %}>Creador</option>
-                <option value="collaborator" {% if filter_type == 'collaborator' %}selected{% endif %}>Colaborador</option>
-            </select>
-            <button type="submit" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg">Buscar</button>
-            <a href="{% url 'lists' %}" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg">Limpiar Búsqueda</a>
+            <div class="flex space-x-4">
+                <select name="filter" class="form-select bg-[#e7edf3] text-[#0e141b] rounded-xl px-7 py-2">
+                    <option value="both" {% if filter_type == 'both' %}selected{% endif %}>Ambas</option>
+                    <option value="creator" {% if filter_type == 'creator' %}selected{% endif %}>Creador</option>
+                    <option value="collaborator" {% if filter_type == 'collaborator' %}selected{% endif %}>Colaborador</option>
+                </select>
+                <button type="submit" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg flex items-center" title="Buscar">
+                    <img src="/media/icons/search.svg" alt="Buscar Icon" class="w-5 h-5">
+                </button>
+                <a href="{% url 'lists' %}" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg flex items-center" title="Limpiar Búsqueda">
+                    <img src="/media/icons/xmark.svg" alt="Limpiar Búsqueda Icon" class="w-5 h-5">
+                </a>
+            </div>
         </div>
     </form>
     <div class="flex items-center space-x-4 mb-6">
@@ -36,7 +42,7 @@
             </div>
         {% else %}
         {% for list in lists %}
-        <div class="bg-white rounded-lg shadow-md p-4 flex items-center space-x-4 cursor-pointer transform transition-transform hover:scale-105 w-full" onclick="location.href='{% url 'list_details' list.id %}'">
+        <div class="bg-white rounded-lg shadow-md p-4 flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 cursor-pointer transform transition-transform hover:scale-105 w-full" onclick="location.href='{% url 'list_details' list.id %}'">
             <div class="flex-shrink-0">
                 {% if request.user == list.creator %}
                 <img src="/media/icons/user.svg" alt="Creator Icon" width="24px" height="24px">
@@ -46,9 +52,9 @@
             </div>
             <div class="flex-grow">
                 <h3 class="text-lg font-bold text-[#0e141b]">{{list.name}}</h3>
-                <p class="text-gray-600">{{ list.description|truncatechars:80 }}</p>
+                <p class="text-gray-600 break-words" style="word-break: break-word;">{{ list.description|truncatechars:80 }}</p>
             </div>
-            <div class="flex space-x-2">
+            <div class="flex space-x-2 md:ml-auto">
                 {% for collaborator in list.collaborators.all|slice:":3" %}
                 <a href="{% url 'user_details' collaborator.username %}" title="{{ collaborator.username }}">
                     <img src="../media/{{ collaborator.profile.pic }}" class="rounded-full w-10 h-10" alt="{{ collaborator.username }}">
@@ -88,11 +94,11 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             data.lists.forEach(list => {
                 const listElement = document.createElement('div');
-                listElement.className = `bg-white rounded-lg shadow-md p-4 flex items-center space-x-4 cursor-pointer transform transition-transform hover:scale-105 w-full`;
+                listElement.className = `bg-white rounded-lg shadow-md p-4 flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 cursor-pointer transform transition-transform hover:scale-105 w-full`;
                 listElement.onclick = () => location.href = `/lists/${list.id}/`;
                 listElement.innerHTML = `
-                    <div class="flex-shrink-0">
-                        ${list.creator === '{{ request.user.username }}' ? `
+                    <div class="flex-grow">
+                         ${list.creator === '{{ request.user.username }}' ? `
                         <svg width="24px" height="24px" stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" color="#000000">
                             <path d="M5 20V19C5 15.134 8.13401 12 12 12V12C15.866 12 19 15.134 19 19V20" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
                             <path d="M12 12C14.2091 12 16 10.2091 16 8C16 5.79086 14.2091 4 12 4C9.79086 4 8 5.79086 8 8C8 10.2091 9.79086 12 12 12Z" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -103,12 +109,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             <path d="M8 12C10.2091 12 12 10.2091 12 8C12 5.79086 10.2091 4 8 4C5.79086 4 4 5.79086 4 8C4 10.2091 5.79086 12 8 12Z" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
                             <path d="M18 9C19.6569 9 21 7.65685 21 6C21 4.34315 19.6569 3 18 3C16.3431 3 15 4.34315 15 6C15 7.65685 16.3431 9 18 9Z" stroke="#000000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
                         </svg>`}
-                    </div>
-                    <div class="flex-grow">
                         <h3 class="text-lg font-bold text-[#0e141b]">${list.name}</h3>
-                        <p class="text-gray-600">${list.description.length > 80 ? list.description.substring(0, list.description.lastIndexOf(' ', 80)) + '...' : list.description}</p>
+                        <p class="text-gray-600 break-words" style="word-break: break-word;">${list.description.length > 80 ? list.description.substring(0, list.description.lastIndexOf(' ', 80)) + '...' : list.description}</p>
                     </div>
-                    <div class="flex space-x-2">
+                    <div class="flex space-x-2 md:ml-auto">
                         ${list.collaborators.slice(0, 3).map(collaborator => `
                         <a href="/users/${collaborator.username}/" title="${collaborator.username}">
                             <img src="${collaborator.profile_pic}" class="rounded-full w-10 h-10" alt="${collaborator.username}">
