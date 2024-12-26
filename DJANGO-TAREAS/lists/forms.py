@@ -48,11 +48,11 @@ class AddTagForm(ModelForm):
             'color': Select(choices=[
                 ('#FF0000', 'Rojo'),
                 ('#00FF00', 'Verde'),
-                ('#0000FF', 'Azul'),
+                ('#1980E6', 'Azul'),
                 ('#FFFF00', 'Amarillo'),
                 ('#FFA500', 'Naranja'),
                 ('#FF80FF', 'Rosa'),
                 ('#800080', 'Morado'),
                 ('#00FFFF', 'Cian')
-            ], attrs={'class': 'w-full p-2 border rounded', 'style': 'background-color: var(--color); color: var(--text-color);'}),
+            ], attrs={'class': 'w-full p-2 border rounded'}),
         }
