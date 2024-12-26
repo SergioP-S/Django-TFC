@@ -102,7 +102,7 @@
                     </div>
                     <div class="relative">
                         <button class="text-white flex items-center space-x-2 user-menu-button" id="user-menu-button">
-                            <img src="../../media/{{ user.profile.pic }}" class="rounded-full w-8 h-8" alt="{{user.username}}">
+                            <img src="{{ user.profile.pic.url }}" class="rounded-full w-8 h-8" alt="{{user.username}}">
                             <span>{{user.username}}</span>
                         </button>
                         <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 hidden" id="user-menu">

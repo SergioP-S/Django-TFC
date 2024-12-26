@@ -18,6 +18,26 @@ from django.core.paginator import Paginator
 
 @login_required
 def lists(request):
+    """
+    Handles the view for displaying and filtering lists based on search query and filter type.
+    Args:
+        request (HttpRequest): The HTTP request object containing GET parameters for search query, filter type, and pagination.
+    Returns:
+        HttpResponse: Renders the 'lists.html' template with the filtered and paginated lists.
+        JsonResponse: Returns a JSON response with the filtered lists data and pagination info if the request is an AJAX request.
+    GET Parameters:
+        search (str): The search query to filter lists by name (default is an empty string).
+        filter (str): The filter type to filter lists by creator or collaborator (default is 'both').
+        page (int): The page number for pagination (default is 1).
+    Template Context:
+        lists (Page): The paginated lists based on the search query and filter type.
+        search_query (str): The search query used for filtering lists.
+        filter_type (str): The filter type used for filtering lists.
+    JSON Response:
+        lists (list): A list of dictionaries containing list details (id, name, creator, collaborators) for the current page.
+        has_next (bool): Indicates if there are more pages available.
+    """
+
     search_query = request.GET.get('search', '')
     filter_type = request.GET.get('filter', 'both')
     
@@ -289,17 +309,18 @@ def user_in_list(list_id, user):
 def modify_item(request, list_id, item_id):
     """
     Modify an item in a list.
-    This view handles the modification of an item in a specific list. It checks if the user has the necessary permissions
-    to modify the item and processes the form submission for modifying the item.
+    This view handles the modification of an item in a specific list. It ensures that the user has the necessary permissions to modify the item and processes the form submission to update the item details.
     Args:
         request (HttpRequest): The HTTP request object.
         list_id (int): The ID of the list containing the item.
         item_id (int): The ID of the item to be modified.
     Returns:
-        HttpResponse: Renders the 'modify_item.html' template with the form for GET requests.
-                      Redirects to the list view upon successful modification for POST requests.
-                      Returns an error message if the modification fails.
-                      Raises Http404 if the user does not have permission to modify the item.
+        HttpResponse: A redirect to the list details page if the modification is successful.
+        HttpResponse: A rendered list details page with an error message if the form is invalid.
+        HttpResponse: An error message if an exception occurs during modification.
+        Http404: If the user does not have permission to modify the item or if the request method is 'GET'.
+    Raises:
+        Http404: If the user does not have permission to modify the item or if the request method is 'GET'.
     """
 
 
@@ -308,12 +329,7 @@ def modify_item(request, list_id, item_id):
 
     if request.user == list.creator or request.user in list.collaborators.all() or request.user == item.added_by:
         if request.method == 'GET': 
-            form = ModifyItemForm(instance=item)
-            return render(request, 'modify_item.html', {
-                'form': form,
-                'list': list, 
-                'item': item
-            })
+            raise Http404
         else:
             try:            
                 form = ModifyItemForm(request.POST, instance=item)
@@ -326,11 +342,21 @@ def modify_item(request, list_id, item_id):
                     modified_item.save()  
                     return redirect(f'/lists/{list_id}/')
                 else:
-                    return render(request, 'modify_item.html', {
-                    'form': form,
-                    'list': list, 
-                    'item': item,
-                    'error': "Error while modifying the item"
+                    items = Item.objects.filter(list=list_id).order_by('added_on')
+                    tags = Tag.objects.filter(list=list_id)
+                    return render(request, 'list_details.html', {
+                        'title': "Detalles de la lista",
+                        'list': list,
+                        'items': items,
+                        'tags': tags,
+                        'error': "Error al modificar el item, recuerda que el nombre es obligatorio",
+                        'collaborators': [
+                            {
+                                'username': collaborator.username,
+                                'profile_pic': collaborator.profile.pic.url if collaborator.profile.pic else ''
+                            }
+                            for collaborator in list.collaborators.all()
+                        ]
                     })
             except Exception as e:
                 return HttpResponse(f"Error modifiying the list: {str(e)}", status=500)

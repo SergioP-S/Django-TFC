@@ -125,18 +125,30 @@ def signup(request):
 @login_required
 def signout(request):
     """
-    Logs out the current user and redirects to the home page.
-
+    Handle user sign-out process.
+    Logs out the user and redirects to the home page.
     Args:
         request (HttpRequest): The HTTP request object.
-
     Returns:
-        HttpResponseRedirect: A redirect to the home page.
+        HttpResponse: A redirect to the home page.
     """
     logout(request)
     return redirect('home')
 
 def signin(request):
+    """
+    Handle user sign-in process.
+    If the request method is GET, render the sign-in form.
+    If the request method is POST, authenticate the user with the provided credentials.
+    If authentication fails, render the sign-in form with an error message.
+    If the user is not active, redirect to the email verification page.
+    If authentication is successful, log the user in and redirect to the appropriate page.
+    Args:
+        request (HttpRequest): The HTTP request object.
+    Returns:
+        HttpResponse: The HTTP response object with the rendered sign-in form or a redirect.
+    """
+
     if request.method == "GET": 
         return render(request, 'signin.html', {
             'form': CustomUserLoginForm
@@ -160,6 +172,20 @@ def signin(request):
         
 
 def verify_mail(request):
+    """
+    View function to verify a user's email address.
+    This function handles the verification of a user's email address by checking
+    a verification key provided in the request. If the user is authenticated, it
+    raises a 404 error. If the verification key matches the one stored in the session
+    and has not expired, the user's account is activated, and they are logged in.
+    Otherwise, an error message is displayed.
+    Args:
+        request (HttpRequest): The HTTP request object containing metadata about the request.
+    Returns:
+        HttpResponse: A redirect to the home page if verification is successful.
+                      A rendered 'verify_mail.html' template with an error message if verification fails.
+    """
+
     if request.user.is_authenticated:
         raise Http404("Page not found")
     key = request.GET.get('key')
@@ -179,6 +205,14 @@ def verify_mail(request):
 
 @login_required
 def user_details(request, username): 
+    """
+    Display user details and profile information.
+    Args:
+        request (HttpRequest): The HTTP request object.
+        username (str): The username of the user whose details are to be displayed.
+    Returns:
+        HttpResponse: The rendered user details page.
+    """
     user = get_object_or_404(User, username=username)
     try:
         profile = Profile.objects.get(user=user)
@@ -192,6 +226,14 @@ def user_details(request, username):
 
 @login_required
 def load_user_lists(request, username):
+    """
+    Load public lists created by a specific user.
+    Args:
+        request (HttpRequest): The HTTP request object.
+        username (str): The username of the user whose lists are to be loaded.
+    Returns:
+        JsonResponse: A JSON response containing the lists and a flag indicating if there are more lists to load.
+    """
     user = get_object_or_404(User, username=username)
     offset = int(request.GET.get('offset', 0))
     limit = int(request.GET.get('limit', 10))
@@ -202,6 +244,15 @@ def load_user_lists(request, username):
 
 @login_required
 def profile_settings(request):
+    """
+    Handle profile settings update.
+    If the request method is GET, render the profile settings form.
+    If the request method is POST, validate and save the form data.
+    Args:
+        request (HttpRequest): The HTTP request object.
+    Returns:
+        HttpResponse: The rendered profile settings page with success or error messages.
+    """
     if request.method == 'GET':
         if hasattr(request.user, 'profile'):
             profile = get_object_or_404(Profile, user=request.user)
@@ -242,6 +293,14 @@ def profile_settings(request):
 
 @login_required
 def delete_user(request):
+    """
+    Handle user account deletion.
+    If the request method is POST, validate the password and delete the user account if the password is correct.
+    Args:
+        request (HttpRequest): The HTTP request object.
+    Returns:
+        HttpResponse: A redirect to the home page or the profile settings page with an error message.
+    """
     if request.method == 'POST':
         password = request.POST.get('password')
         if request.user.check_password(password):
@@ -255,6 +314,15 @@ def delete_user(request):
     return redirect('profile_settings')
 
 def reset_password(request):
+    """
+    Handle password reset process.
+    If the request method is GET, render the password reset form.
+    If the request method is POST, validate the form data and reset the password if the data is valid.
+    Args:
+        request (HttpRequest): The HTTP request object.
+    Returns:
+        HttpResponse: The rendered password reset page or a redirect to the sign-in page.
+    """
     if request.method == 'GET':
         if request.user.is_authenticated:
             return render(request, 'reset_password.html', {'form': PasswordResetForm(user=request.user)})
@@ -297,6 +365,16 @@ def reset_password(request):
                 return render(request, 'reset_password_email.html', {'form': form})
 
 def reset_password_confirm(request, uidb64, token):
+    """
+    Handle password reset confirmation.
+    Validate the token and reset the password if the token is valid.
+    Args:
+        request (HttpRequest): The HTTP request object.
+        uidb64 (str): The base64 encoded user ID.
+        token (str): The password reset token.
+    Returns:
+        HttpResponse: The rendered password reset confirmation page or a redirect to the sign-in page.
+    """
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
