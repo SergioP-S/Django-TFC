@@ -9,8 +9,10 @@
             <h2 class="text-[#0e141b] text-2xl font-bold mb-2">{{ user.username }}</h2>
             <p class="text-[#4e7397] text-base mb-4">{{ user.email }}</p>
             <hr class="w-full mb-4">
-            <h3 class="text-lg font-semibold mb-2">Sobre mí:</h3>
-            <p class="text-[#0e141b] text-base">{{ user.profile.description }}</p>
+            {% if user.profile.description %}
+                <h3 class="text-lg font-semibold mb-2">Sobre mí:</h3>
+                <p class="text-[#0e141b] text-base">{{ user.profile.description }}</p>
+            {% endif %}
         </div>
         <div class="bg-white rounded-lg shadow-md p-6 flex-grow">
             <h2 class="text-gray-800 text-4xl font-black mb-4">Modificar Perfil</h2>
@@ -26,7 +28,7 @@
                         <div class="flex items-center">
                             <label for="id_pic" class="cursor-pointer">
                                 <div class="bg-blue-500 text-white font-bold py-2 rounded-lg h-10 w-10 flex items-center justify-center">
-                                    <img src="../media/icons/attachment.svg" alt="Upload Icon" class="w-6 h-6">
+                                    <img src="{% static 'icons/attachment.svg' %}" class="h-5 w-5" alt="Subir imagen">
                                 </div>
                             </label>
                             <input type="file" id="id_pic" name="pic" accept="image/*" onchange="previewImage(event)" class="hidden">

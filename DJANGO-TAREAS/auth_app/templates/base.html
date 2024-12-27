@@ -87,6 +87,10 @@
             width: 100%;
             z-index: 1000;
         }
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            text-decoration: none;
+        }
     </style>
 </head>
 
@@ -97,8 +101,8 @@
             <div class="flex items-center space-x-4">
                 {% if user.is_authenticated %}
                     <div class="nav-links flex items-center space-x-4">
-                        <a class="text-white" href="{% url 'lists' %}"><i class="fas fa-list mx-1"></i>Mis Listas</a>
-                        <a class="text-white" href="{% url 'create_list' %}"><i class="fas fa-list mx-1"></i>Crear Lista</a>
+                        <a class="text-white" href="{% url 'lists' %}">Mis Listas</a>
+                        <a class="text-white" href="{% url 'create_list' %}">Crear Lista</a>
                     </div>
                     <div class="relative">
                         <button class="text-white flex items-center space-x-2 user-menu-button" id="user-menu-button">

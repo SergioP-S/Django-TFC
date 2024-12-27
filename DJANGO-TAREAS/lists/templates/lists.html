@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <div class="max-w-5xl mx-auto p-6"> <!-- Cambiado para que coincida con user_details.html -->
@@ -16,21 +17,21 @@
                     <option value="collaborator" {% if filter_type == 'collaborator' %}selected{% endif %}>Colaborador</option>
                 </select>
                 <button type="submit" class="bg-[#1980e6] text-white font-bold py-2 px-4 rounded-lg flex items-center" title="Buscar">
-                    <img src="/media/icons/search.svg" alt="Buscar Icon" class="w-5 h-5">
+                    <img src="{% static 'icons/search.svg' %}" class="h-5 w-5" alt="Buscar">
                 </button>
                 <a href="{% url 'lists' %}" class="bg-gray-500 text-white font-bold py-2 px-4 rounded-lg flex items-center" title="Limpiar Búsqueda">
-                    <img src="/media/icons/xmark.svg" alt="Limpiar Búsqueda Icon" class="w-5 h-5">
+                    <img src="{% static 'icons/xmark.svg' %}" class="h-5 w-5" alt="Limpiar búsqueda">
                 </a>
             </div>
         </div>
     </form>
     <div class="flex items-center space-x-4 mb-6">
         <div class="flex items-center space-x-2">
-            <img src="/media/icons/user.svg" alt="Creator Icon" width="24px" height="24px">
+            <img src="{% static 'icons/user.svg' %}" class="h-5 w-5" alt="Creador">
             <span>Creador</span>
         </div>
         <div class="flex items-center space-x-2">
-            <img src="/media/icons/group.svg" alt="Collaborator Icon" width="24px" height="24px">
+            <img src="{% static 'icons/group.svg' %}" class="h-5 w-5" alt="Colaborador">
             <span>Colaborador</span>
         </div>
     </div>
@@ -45,9 +46,9 @@
         <div class="bg-white rounded-lg shadow-md p-4 flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-4 cursor-pointer transform transition-transform hover:scale-105 w-full" onclick="location.href='{% url 'list_details' list.id %}'">
             <div class="flex-shrink-0">
                 {% if request.user == list.creator %}
-                <img src="/media/icons/user.svg" alt="Creator Icon" width="24px" height="24px">
+                <img src="{% static 'icons/user.svg' %}" class="h-5 w-5" alt="Creador">
                 {% else %}
-                <img src="/media/icons/group.svg" alt="Collaborator Icon" width="24px" height="24px">
+                <img src="{% static 'icons/group.svg' %}" class="h-5 w-5" alt="Colaborador">
                 {% endif %}
             </div>
             <div class="flex-grow">
