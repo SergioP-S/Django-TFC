@@ -1,10 +1,17 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mx-auto py-10 flex justify-center items-center px-4 sm:px-6 lg:px-8">
+<div class="container mx-auto py-10 flex flex-col justify-center items-center px-4 sm:px-6 lg:px-8">
+    {% if error %}
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 w-full max-w-lg" role="alert">
+            <strong class="font-bold">Error:</strong>
+            <span class="block sm:inline">{{ error }}</span>
+        </div>
+    {% endif %}
     <div class="bg-white rounded-lg shadow-md p-6 w-full max-w-lg">
         <h1 class="text-[#0e141b] text-2xl font-bold mb-4">Crear Lista</h1>
         <p class="text-[#4e7397] mb-4">Tu familia o amigos podrán añadir items, o consultar los que ya estén.</p>
+        
         <form action="/lists/create/" method="post">
             {% csrf_token %}
             {{ form.non_field_errors }}

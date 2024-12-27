@@ -129,13 +129,15 @@ def create_list(request):
             form = ListForm(request.POST)
             new_list = form.save(commit=False)
             new_list.creator = request.user
+            if not new_list.description:
+                new_list.description = ""
             new_list.save()
             return redirect('lists')
         except:
             #In case of error creating the list, it returns the create_list.html view with an error message
             return render(request, 'create_list.html', {
             'form': ListForm,
-            'error': 'Error, introduzca datos válidos'
+            'error': 'El nombre de la lista es obligatorio, máximo 50 caracteres'
         })
 
 @login_required
@@ -168,7 +170,7 @@ def add_item(request, list_id):
                 'list': list_obj,
                 'items': items,
                 'tags': tags,
-                'error': 'Error, introduzca datos válidos para el item',
+                'error': 'Por favor, introduzca un nombre para el item, máximo 40 caracteres. La descripción máximo 256 caracteres y es opcional.',
                 'collaborators': [
                     {
                         'username': collaborator.username,
@@ -628,7 +630,7 @@ def add_tag(request, list_id):
                 'list': list_obj,
                 'items': items,
                 'tags': tags,
-                'error': 'Error, introduzca datos válidos para el tag',
+                'error': 'EL nombre del tag es obligatorio, máximo 30 caracteres',
                 'collaborators': [
                     {
                         'username': collaborator.username,

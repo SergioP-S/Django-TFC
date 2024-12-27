@@ -52,7 +52,7 @@ class Item(models.Model):
         return self.name + ' - added by ' + self.added_by.username
     
 class Tag(models.Model):
-    name = models.CharField(max_length=40)
+    name = models.CharField(max_length=30)
     color = models.CharField(max_length=7, default="#007bff")
     list = models.ForeignKey(List, on_delete=models.CASCADE)
 

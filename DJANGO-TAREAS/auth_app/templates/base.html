@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,6 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Listopia</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'icons/favicon.ico' %}">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin="" />
     <link rel="stylesheet" as="style" onload="this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Work+Sans%3Awght%40400%3B500%3B700%3B900" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -116,8 +118,8 @@
                         </div>
                     </div>
                 {% else %}
-                    <a class="text-white" href="{% url 'signup' %}"><i class="fas fa-user-plus mx-1"></i>Crea una cuenta</a>
-                    <a class="text-white" href="{% url 'signin' %}"><i class="fas fa-sign-in-alt mx-1"></i>Inicia Sesión</a>
+                    <a class="text-white" href="{% url 'signup' %}">Crea una cuenta</a>
+                    <a class="text-white" href="{% url 'signin' %}">Inicia Sesión</a>
                 {% endif %}
             </div>
         </div>

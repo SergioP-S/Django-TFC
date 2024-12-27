@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+    <div class="max-w-5xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <div class="bg-cover bg-center bg-no-repeat rounded-xl p-10" style='background-image: linear-gradient(rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%), url("https://cdn.usegalileo.ai/sdxl10/c2db0b58-24e4-471c-8076-fe46520bbb4c.png");'>
+            <h1 class="text-white text-4xl font-black mb-4">404 - Página no encontrada</h1>
+            <p class="text-white text-lg mb-6">Lo sentimos, pero la página que estás buscando no existe.</p>
+            <a href="{% url 'home' %}" class="bg-[#1980e6] text-white font-bold py-4 px-8 rounded-xl text-lg sm:text-base sm:py-2 sm:px-4 hover:bg-[#0e6bb8] transition duration-300">
+                Volver al inicio
+            </a>
+        </div>
+    </div>
+{% endblock %}
