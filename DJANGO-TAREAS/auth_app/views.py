@@ -22,6 +22,8 @@ from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.template.loader import render_to_string
 from django.contrib.auth.forms import PasswordChangeForm
+import uuid
+from django.utils import timezone
 
 
 def home(request): 
@@ -91,13 +93,11 @@ def signup(request):
                 user.save()
                 # Create a profile for the new user
                 profile = Profile(user=user, description='', pic='profile_pics/default.jpg')
-                profile.save()
                 # Generate verification key and expiration date
-                verification_key = ''.join(random.choices(string.ascii_uppercase + string.digits, k=32))
-                expiration_date = datetime.now() + timedelta(days=1)
-                request.session['verification_key'] = verification_key
-                request.session['expiration_date'] = expiration_date.isoformat()
-                request.session['user_id'] = user.id
+                verification_key = str(uuid.uuid4())
+                profile.verification_key = verification_key
+                profile.verification_key_expiration = timezone.now() + timezone.timedelta(days=1)
+                profile.save()
                 verification_link = request.build_absolute_uri(f"/verify_mail/?key={verification_key}")
                 send_mail(
                     'Verify your email',
@@ -189,21 +189,23 @@ def verify_mail(request):
     key = request.GET.get('key')
     if not key:
         return render(request, 'verify_mail.html')
-    print("verification_key:" + request.session.get('verification_key'))
-    if key and key == request.session.get('verification_key'):
-        
-        expiration_date = datetime.fromisoformat(request.session.get('expiration_date'))
-        print("expiration_date:" + request.session.get('expiration_date'))
-        if datetime.now() < expiration_date:
-            user_id = request.session.get('user_id')
-            user = User.objects.get(id=user_id)
-            user.is_active = True
-            user.save()
-            login(request, user)
-            return redirect('home')
-        else:
-            return render(request, 'verify_mail.html', {'error': 'Verification link has expired'})
-    return render(request, 'verify_mail.html', {'error': 'Invalid verification link'})
+
+    try:
+        profile = Profile.objects.get(verification_key=key)
+    except Profile.DoesNotExist:
+        return render(request, 'verify_mail.html', {'error': 'Invalid verification link'})
+
+    if profile.verification_key_expiration and timezone.now() < profile.verification_key_expiration:
+        user = profile.user
+        user.is_active = True
+        profile.verification_key = None
+        profile.verification_key_expiration = None
+        user.save()
+        profile.save()
+        login(request, user)
+        return redirect('home')
+    else:
+        return render(request, 'verify_mail.html', {'error': 'Verification link has expired'})
 
 
 @login_required

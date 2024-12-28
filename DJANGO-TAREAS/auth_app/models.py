@@ -12,6 +12,8 @@ class Profile(models.Model):
         description (TextField): A text field for the user's profile description.
         pic (ImageField): An optional image field for the user's profile picture, 
                           which is uploaded to the 'profile_pics' directory.
+        verification_key (CharField): A field for storing the email verification key.
+        verification_key_expiration (DateTimeField): A field for storing the expiration date of the verification key.
     Methods:
         __str__(): Returns the username of the associated User.
     """
@@ -19,6 +21,8 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     description = models.TextField()
     pic = models.ImageField(upload_to='profile_pics', blank=True, null=True)
+    verification_key = models.CharField(max_length=64, null=True, blank=True)
+    verification_key_expiration = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.user.username
