@@ -189,8 +189,9 @@ def verify_mail(request):
     if request.user.is_authenticated:
         raise Http404("Page not found")
     key = request.GET.get('key')
+    if not key:
+        return render(request, 'verify_mail.html')
     print("verification_key:" + request.session.get('verification_key'))
-    print("key:" + key)
     if key and key == request.session.get('verification_key'):
         
         expiration_date = datetime.fromisoformat(request.session.get('expiration_date'))
