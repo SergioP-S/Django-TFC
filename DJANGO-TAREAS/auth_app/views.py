@@ -186,8 +186,6 @@ def verify_mail(request):
                       A rendered 'verify_mail.html' template with an error message if verification fails.
     """
 
-    if request.user.is_authenticated:
-        raise Http404("Page not found")
     key = request.GET.get('key')
     if not key:
         return render(request, 'verify_mail.html')
