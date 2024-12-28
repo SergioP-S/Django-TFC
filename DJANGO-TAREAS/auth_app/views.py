@@ -189,8 +189,12 @@ def verify_mail(request):
     if request.user.is_authenticated:
         raise Http404("Page not found")
     key = request.GET.get('key')
+    print("verification_key:" + request.session.get('verification_key'))
+    print("key:" + key)
     if key and key == request.session.get('verification_key'):
+        
         expiration_date = datetime.fromisoformat(request.session.get('expiration_date'))
+        print("expiration_date:" + request.session.get('expiration_date'))
         if datetime.now() < expiration_date:
             user_id = request.session.get('user_id')
             user = User.objects.get(id=user_id)
