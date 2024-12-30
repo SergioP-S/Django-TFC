@@ -1,4 +1,4 @@
-# Proyecto Python
+# Listopia, plataforma de listas colaborativas con Django
 
 ¡Bienvenido al proyecto de Listopia! Este README te guiará a través del proceso para importar y configurar el proyecto en tu máquina local.
 
