@@ -100,8 +100,8 @@ def signup(request):
                 profile.save()
                 verification_link = request.build_absolute_uri(f"/verify_mail/?key={verification_key}")
                 send_mail(
-                    'Verify your email',
-                    f'Click the link to verify your email: {verification_link}',
+                    'Verifique su correo electrónico, Listopia',
+                    f'Por favor, acceda a este enlace para verificar su cuenta: {verification_link}',
                     settings.EMAIL_HOST_USER,
                     [user.email],
                     fail_silently=False,
@@ -193,7 +193,7 @@ def verify_mail(request):
     try:
         profile = Profile.objects.get(verification_key=key)
     except Profile.DoesNotExist:
-        return render(request, 'verify_mail.html', {'error': 'Invalid verification link'})
+        return render(request, 'verify_mail.html', {'error': 'Enlace de verificación inválido'})
 
     if profile.verification_key_expiration and timezone.now() < profile.verification_key_expiration:
         user = profile.user
@@ -205,7 +205,7 @@ def verify_mail(request):
         login(request, user)
         return redirect('home')
     else:
-        return render(request, 'verify_mail.html', {'error': 'Verification link has expired'})
+        return render(request, 'verify_mail.html', {'error': 'El link de verificación ha expirado'})
 
 
 @login_required
